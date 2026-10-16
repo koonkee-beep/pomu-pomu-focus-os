@@ -90,7 +90,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 .mini{background:#FFF;border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:8px;font-size:12px;overflow-wrap:anywhere;box-shadow:0 2px 4px rgba(66,51,35,.02)}
 .shutdown{padding-left:20px}.shutdown li{margin:12px 0;color:var(--muted)}.shutdown b{color:var(--text)}
 .small{font-size:12px;color:var(--muted)}
-#taskTitle{min-width:min(220px,100%) !important}#tasks .row > select,#tasks .row > input{flex:1 1 110px}#tasks .row > #taskTitle{flex:2 1 220px}
+#taskTitle{min-width:min(220px,100%) !important}#tasks .row > select,#tasks .row > input{flex:1 1 110px}#tasks .row > #taskTitle{flex:1 0 100%;width:100%}
 #focusSelect{white-space:nowrap;text-overflow:ellipsis}
 /* Existing immersive breathing experience, in the same warm palette. */
 .focus-launch{display:flex;align-items:center;justify-content:space-between;gap:16px}.focus-launch button{flex:none}
@@ -238,7 +238,7 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
       </div>
       <div class="card">
         <div class="row task-create-row">
-          <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
+          <input id="taskTitle" aria-label="Task title" placeholder="Task title">
           <div class="category-picker">
             <select id="taskProject" aria-label="Task category"></select>
             <button type="button" class="ghost category-manage" id="manageCategoriesBtn" aria-expanded="false" aria-controls="categoryManager" onclick="toggleCategoryManager()">Manage Categories</button>
