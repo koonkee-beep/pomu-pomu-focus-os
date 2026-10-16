@@ -6,122 +6,136 @@
 <title>POMU POMU Focus OS</title>
 <style>
 :root{
-  --bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--text:#f4f5f7;--muted:#9ca3af;
-  --line:#2a303b;--accent:#f0a05a;--good:#7ec699;--warn:#e8c46b;--bad:#e78383;
-  --blue:#7da7e8;--purple:#b397e6;
+  color-scheme:light;
+  --bg:#FAF8F4;--panel:#FFFFFF;--panel2:#F4F2EC;--text:#34312F;--muted:#706B65;
+  --line:#E8E3DA;--accent:#F4A77D;--good:#A8BFA3;--warn:#86611F;--bad:#A14036;
+  --blue:#546D80;--purple:#786483;--sage-ink:#42583E;
+  --shadow:0 3px 18px rgba(66,51,35,.035);
 }
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit}
-.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-.sidebar{border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh}
-.brand{font-size:18px;font-weight:800;margin:0 8px 20px}.brand span{color:var(--accent)}
-.nav button{width:100%;text-align:left;background:transparent;border:0;color:var(--muted);padding:10px 12px;border-radius:10px;cursor:pointer;margin:2px 0}
-.nav button.active,.nav button:hover{background:var(--panel2);color:var(--text)}
-.main{padding:24px;max-width:1320px;width:100%;margin:auto}
-.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
-h1{font-size:24px;margin:0}.sub{color:var(--muted);font-size:13px}
-.grid{display:grid;gap:14px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
-.card h3{margin:0 0 12px;font-size:15px}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-input,select,textarea{background:#11141a;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px}
-input:focus,select:focus,textarea:focus{outline:1px solid var(--accent)}
-button.primary{background:var(--accent);color:#21150b;border:0;border-radius:9px;padding:9px 12px;font-weight:700;cursor:pointer}
-button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:8px 10px;cursor:pointer}
+button,label.ghost{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,label.ghost:focus-within{outline:2px solid var(--sage-ink);outline-offset:3px}
+button:hover{box-shadow:0 2px 7px rgba(66,51,35,.08)}
+button:active{box-shadow:none}
+.app{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#F3F0E9;border-right:1px solid var(--line);padding:34px 20px 24px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{position:relative;padding-top:48px;margin:0 12px 38px;font-size:22px;font-weight:750;letter-spacing:.025em;line-height:1.3}
+.brand::before,.brand::after{content:"";position:absolute;top:0;width:19px;height:27px;border-radius:12px 12px 7px 7px;transform:rotate(-20deg);background:var(--accent)}
+.brand::after{left:23px;top:4px;height:23px;transform:rotate(20deg);background:var(--good)}
+.brand .small{font-size:11px;font-weight:450;letter-spacing:.025em;margin-top:7px}
+.nav{display:grid;gap:5px}
+.nav button{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--muted);padding:11px 13px;border-radius:12px;font-weight:550;min-height:46px}
+.nav button::before{content:"";width:14px;height:14px;border:1.5px solid currentColor;border-radius:4px;opacity:.7;flex:none}
+.nav button[data-page="today"]::before{border-radius:50%;box-shadow:inset 0 0 0 3px #F3F0E9}
+.nav button[data-page="focus"]::before{border-radius:50%;border-width:3px}
+.nav button[data-page="inbox"]::before{height:10px;border-top:0;border-radius:0 0 4px 4px}
+.nav button[data-page="shutdown"]::before{height:9px;border-radius:12px 12px 0 0}
+.nav button[data-page="settings"]::before{border-radius:50%;box-shadow:inset 0 0 0 3px #F3F0E9}
+.nav button.active{background:#FFF;border-color:var(--line);color:var(--text);box-shadow:var(--shadow)}
+.nav button.active::before{color:#96603F}
+.nav button:hover{background:#FFF9F3;color:var(--text)}
+.sidebar-note{margin:38px 13px 0;padding-top:19px;border-top:1px solid #E2DDD3;font-size:12px;color:var(--muted)}
+.sidebar-note span{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:8px}
+.app > .main{padding:34px clamp(24px,3.5vw,54px) 40px;max-width:1440px;width:100%;margin:0 auto;min-width:0;align-self:start}
+.topbar{display:flex;gap:18px;align-items:center;justify-content:space-between;margin-bottom:25px}
+.eyebrow{font-size:10px;font-weight:650;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+h1{font-size:32px;line-height:1.25;font-weight:650;letter-spacing:-.04em;margin:0 0 7px}
+.sub{color:var(--muted);font-size:13px}
+.grid{display:grid;gap:18px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 15px;font-size:14px;font-weight:650;letter-spacing:-.01em}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+input,select,textarea{background:#FDFCF9;border:1px solid #DAD4C9;color:var(--text);border-radius:10px;padding:10px 12px;max-width:100%;min-width:0}
+input::placeholder,textarea::placeholder{color:#766F68;opacity:1}
+input[type="checkbox"]{accent-color:var(--sage-ink);width:17px;height:17px;margin:4px 0;cursor:pointer}
+button.primary{background:var(--accent);color:#493124;border:1px solid transparent;border-radius:11px;padding:10px 17px;font-weight:650;min-height:43px}
+button.primary:hover{background:#F0B58F}
+button.ghost,label.ghost{display:inline-flex;align-items:center;justify-content:center;background:#FFF;color:var(--text);border:1px solid #DDD6CA;border-radius:10px;padding:9px 13px;min-height:40px;text-decoration:none}
+button.ghost:hover,label.ghost:hover{background:var(--panel2);border-color:#C7BCAF}
 button.danger{color:var(--bad)}
-.big-input{width:100%;font-size:16px;padding:13px}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.kpi{background:var(--panel2);padding:12px;border-radius:12px}.kpi b{display:block;font-size:22px}.kpi span{color:var(--muted);font-size:12px}
-.task{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
-.task:last-child{border-bottom:0}.task-title{font-weight:650}.meta{color:var(--muted);font-size:12px;margin-top:3px}
-.badge{display:inline-block;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:11px;padding:2px 6px;border-radius:999px;margin-right:5px}
-.p1{color:var(--bad)} .p2{color:var(--warn)} .p3{color:var(--good)}
-.timer{font-size:48px;font-weight:800;letter-spacing:1px;margin:8px 0}
-.focus-task{color:var(--accent);font-weight:700;min-height:22px}
+.big-input{width:100%;font-size:15px;padding:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.kpi{display:flex;align-items:baseline;gap:9px;padding:9px 13px;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0;padding-left:0}.kpi b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}.kpi span{color:var(--muted);font-size:11px}
+.daily-priorities{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+.now-card{background:linear-gradient(125deg,#FFF9F3,#FFFFFF 75%);border-color:#E9CFBA;position:relative;overflow:hidden}
+.now-card::after{content:"";position:absolute;width:95px;height:95px;border:1px solid #F0DDCD;border-radius:50%;right:-35px;top:-38px;pointer-events:none}
+.now-card h3,.next-card h3{font-size:11px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px}
+.card-caption{font-size:12px;color:var(--muted);margin-bottom:18px}
+.now-card .task-title{font-size:21px;line-height:1.45;font-weight:600;letter-spacing:-.02em}
+.now-card .task{padding-top:4px}.now-card .meta{margin-top:12px}
+.next-card .task:first-child{padding-top:0}.next-card .task-title{font-size:14px}
+.task{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:9px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}.task-title{font-weight:600;overflow-wrap:anywhere}.meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:2}
+.task:has(input:checked) .task-title{color:var(--sage-ink);text-decoration:line-through;text-decoration-color:#A8BFA3}
+.task:has(input:checked) .badge{background:#EEF3EB;color:var(--sage-ink);border-color:#D5E1CF}
+.task > button.ghost{width:30px;min-height:30px;padding:0;font-size:18px;background:transparent;border-color:transparent;color:#81756D}
+.task > button.ghost:hover{color:var(--bad);background:#FCF0EB}
+.badge{display:inline-block;border:1px solid #E5E0D7;background:#F7F5F0;color:#69635B;font-size:10px;line-height:1.6;padding:3px 7px;border-radius:6px;margin-right:4px}
+.p1{color:#9B4436;background:#FAEEE8;border-color:#EED6CD}.p2{color:#806025;background:#F8F3E7;border-color:#EAE0C7}.p3{color:var(--sage-ink);background:#EEF3EB;border-color:#D7E1D2}
+.timer{font-size:60px;line-height:1.2;font-weight:500;letter-spacing:-.045em;margin:24px 0 12px;font-variant-numeric:tabular-nums}
+.focus-task{color:#825239;font-weight:600;min-height:22px;overflow-wrap:anywhere}
 .section{display:none}.section.active{display:block}
-textarea{width:100%;min-height:90px;resize:vertical}
-.note{padding:10px 0;border-bottom:1px solid var(--line)}.note:last-child{border-bottom:0}
-.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.col{background:#12151b;border:1px solid var(--line);border-radius:12px;padding:10px;min-height:180px}.col h4{margin:0 0 8px;color:var(--muted);font-size:12px;text-transform:uppercase}
-.mini{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;margin-bottom:7px;font-size:12px}
-.shutdown li{margin:7px 0;color:#d5d8df}
+textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
+.note{padding:13px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.note:last-child{border-bottom:0}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.col{min-width:0;background:#F8F7F3;border:1px solid #EEEAE1;border-radius:13px;padding:12px;min-height:165px}
+.col h4{display:flex;align-items:center;gap:7px;margin:0 0 14px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.col h4::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:#C7C0B6}
+.col:nth-child(2) h4::before{background:var(--accent)}.col:nth-child(3) h4::before{background:#C8B77F}.col:nth-child(4) h4::before{background:var(--good)}
+.col:nth-child(4){background:#F2F6EF}.col:nth-child(4) .mini{border-color:#DCE6D7;color:var(--sage-ink)}
+.mini{background:#FFF;border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:8px;font-size:12px;overflow-wrap:anywhere;box-shadow:0 2px 4px rgba(66,51,35,.02)}
+.shutdown{padding-left:20px}.shutdown li{margin:12px 0;color:var(--muted)}.shutdown b{color:var(--text)}
 .small{font-size:12px;color:var(--muted)}
-@media(max-width:850px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}.nav{display:flex;overflow:auto}.nav button{width:auto;white-space:nowrap}.g2,.g3,.kanban,.kpis{grid-template-columns:1fr}.main{padding:16px}}
-
-/* --- V1 immersive breathing focus --- */
-.focus-launch{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.focus-overlay{
-  position:fixed;inset:0;z-index:9999;display:none;overflow:auto;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255,255,255,.055), transparent 24%),
-    radial-gradient(circle at 50% 55%, rgba(240,160,90,.06), transparent 33%),
-    #0b0d11;
-}
+#taskTitle{min-width:min(220px,100%) !important}#tasks .row > select,#tasks .row > input{flex:1 1 110px}#tasks .row > #taskTitle{flex:2 1 220px}
+#focusSelect{white-space:nowrap;text-overflow:ellipsis}
+/* Existing immersive breathing experience, in the same warm palette. */
+.focus-launch{display:flex;align-items:center;justify-content:space-between;gap:16px}.focus-launch button{flex:none}
+.focus-overlay{position:fixed;inset:0;z-index:9999;display:none;overflow:auto;background:radial-gradient(ellipse at 50% 38%,#FAECDD 0,transparent 56%),var(--bg)}
 .focus-overlay.active{display:block}
-.focus-shell{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
-.focus-top{
-  position:absolute;top:22px;left:24px;right:24px;display:flex;align-items:center;justify-content:space-between;
-  color:#a9afb9;font-size:12px
+.focus-shell{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:76px 24px 28px}
+.focus-top{position:absolute;top:22px;left:28px;right:28px;display:flex;gap:16px;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px}
+.focus-close{flex:none;border:1px solid #DDD6CA;background:rgba(255,255,255,.7);color:var(--text);width:42px;height:42px;border-radius:50%;font-size:22px}
+.breathe-wrap{width:min(78vw,430px);aspect-ratio:1;display:grid;place-items:center;position:relative}
+.breathe-orb{width:70%;height:70%;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 35% 25%,#FFF8ED,#F3D2B6 65%,#E4D7BF);border:1px solid #E7CDB6;box-shadow:0 0 65px rgba(244,167,125,.15),inset 0 0 55px rgba(255,255,255,.45);transform:scale(.82);transition:transform 5s cubic-bezier(.45,.05,.55,.95),box-shadow 5s ease}
+.breathe-orb.inhale{transform:scale(1.12);box-shadow:0 0 85px rgba(244,167,125,.2),inset 0 0 55px rgba(255,255,255,.4)}
+.breathe-orb.exhale{transform:scale(.82);box-shadow:0 0 45px rgba(168,191,163,.16),inset 0 0 45px rgba(255,255,255,.45)}
+.breathe-inner{text-align:center;pointer-events:none}.breathe-phase{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#6E5846;margin-bottom:9px;min-height:16px}
+.breathe-time{font-size:clamp(42px,8vw,72px);line-height:1.1;font-weight:500;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.breathe-cycle{font-size:11px;color:#725D4B;margin-top:10px}
+.focus-task-main{text-align:center;max-width:720px;min-width:0;margin-top:2px;overflow-wrap:anywhere}.focus-task-main .eyebrow{font-size:10px;color:#756657;margin-bottom:8px}
+.focus-task-main .title{font-size:clamp(20px,3vw,28px);font-weight:550;line-height:1.4;letter-spacing:-.02em}
+.focus-controls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.focus-controls button{border:1px solid #DCD3C6;background:rgba(255,255,255,.8);color:var(--text);border-radius:12px;padding:10px 15px;min-height:44px}
+.focus-controls button.main{background:var(--accent);border-color:var(--accent);color:#493124;font-weight:650;margin:0;width:auto;max-width:none}
+.focus-controls button:last-child{background:var(--good);border-color:var(--good);color:#2F422D}
+.focus-park{width:min(100%,520px);margin-top:24px}.focus-park input{width:100%;border-radius:13px;background:rgba(255,255,255,.75);padding:12px 16px;text-align:center}
+.focus-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}.prep-message{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:18px}
+@media(min-width:1500px){.app > .main{padding-top:42px}}
+@media(max-width:1100px){.app{grid-template-columns:205px minmax(0,1fr)}.sidebar{padding:28px 13px}.brand{font-size:20px}.app > .main{padding:28px 24px}.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{flex-direction:column;gap:0}.daily-priorities{grid-template-columns:1fr}.col{min-height:130px}}
+@media(max-width:760px){
+ .app{grid-template-columns:minmax(0,1fr)}
+ .sidebar{position:static;height:auto;padding:18px 20px 14px;border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+ .brand{padding:0 0 0 46px;margin:0 0 18px;font-size:20px;min-height:37px}.brand::before{top:3px;width:15px;height:23px;left:0}.brand::after{top:7px;left:19px;width:15px;height:20px}.brand .small{margin-top:3px}
+ .nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav button{justify-content:center;gap:7px;padding:9px 6px;font-size:12px;min-height:42px;white-space:nowrap}.nav button::before{width:11px;height:11px}
+ .sidebar-note{display:none}.app > .main{padding:24px 20px 32px}.topbar{margin-bottom:21px;gap:12px}h1{font-size:29px}.sub{font-size:12px}
+ .g2,.g3,.daily-priorities{grid-template-columns:minmax(0,1fr)}.card{padding:19px;border-radius:17px}.grid{gap:14px}
+ .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:17px 0}.kpi{flex-direction:row;gap:8px;align-items:baseline;padding:5px 9px}.kpi:nth-child(3){border-left:0;padding-left:0}.kpi b{font-size:18px}
+ .now-card .task-title{font-size:19px}.kanban{gap:9px}.col{padding:10px}.mini{padding:9px;font-size:11px}.focus-launch{gap:10px}.focus-launch .small{font-size:11px}
+ .focus-shell{padding:75px 16px 25px}.focus-top{top:16px;left:18px;right:18px}.breathe-wrap{width:min(94vw,360px)}
 }
-.focus-close{
-  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#d9dce2;
-  width:38px;height:38px;border-radius:50%;cursor:pointer
-}
-.breathe-wrap{width:min(78vw,520px);aspect-ratio:1;display:grid;place-items:center;position:relative}
-.breathe-orb{
-  width:64%;height:64%;border-radius:50%;display:grid;place-items:center;position:relative;
-  background:
-    radial-gradient(circle at 35% 28%, rgba(255,255,255,.28), transparent 18%),
-    radial-gradient(circle at 50% 58%, rgba(240,160,90,.18), rgba(192,139,211,.11) 42%, rgba(125,167,232,.06) 70%, rgba(255,255,255,.025) 100%);
-  border:1px solid rgba(255,255,255,.13);
-  box-shadow:
-    0 0 70px rgba(240,160,90,.12),
-    inset 0 0 60px rgba(255,255,255,.06);
-  transform:scale(.82);
-  transition:transform 5s cubic-bezier(.45,.05,.55,.95), box-shadow 5s ease, filter 5s ease;
-  backdrop-filter:blur(14px);
-}
-.breathe-orb.inhale{
-  transform:scale(1.12);
-  box-shadow:0 0 110px rgba(240,160,90,.20), inset 0 0 75px rgba(255,255,255,.09);
-  filter:saturate(1.12) brightness(1.04)
-}
-.breathe-orb.exhale{
-  transform:scale(.82);
-  box-shadow:0 0 55px rgba(125,167,232,.09), inset 0 0 50px rgba(255,255,255,.045);
-}
-.breathe-inner{text-align:center;pointer-events:none}
-.breathe-phase{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#c8ccd3;margin-bottom:10px;min-height:16px}
-.breathe-time{font-size:clamp(46px,8vw,78px);line-height:1;font-weight:760;letter-spacing:-.04em}
-.breathe-cycle{font-size:12px;color:#858c97;margin-top:10px}
-.focus-task-main{text-align:center;max-width:720px;margin-top:-18px}
-.focus-task-main .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#757d88;margin-bottom:8px}
-.focus-task-main .title{font-size:clamp(20px,3vw,30px);font-weight:680}
-.focus-controls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:25px}
-.focus-controls button{
-  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:#e8eaee;
-  border-radius:999px;padding:9px 14px;cursor:pointer
-}
-.focus-controls button.main{background:#f0a05a;border-color:#f0a05a;color:#24160d;font-weight:750}
-.focus-park{width:min(92vw,560px);margin-top:24px}
-.focus-park input{
-  width:100%;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.035);
-  padding:12px 16px;text-align:center;color:#e8eaee
-}
-.focus-park input::placeholder{color:#676e79}
-.focus-hint{font-size:11px;color:#666e79;text-align:center;margin-top:8px}
-.prep-message{font-size:12px;color:#7e8691;text-align:center;margin-top:8px;min-height:18px}
-@media(max-width:650px){
-  .focus-top{top:14px;left:14px;right:14px}
-  .breathe-wrap{width:94vw}
-  .focus-task-main{margin-top:-4px}
-}
-
+@media(max-width:380px){.sidebar{padding:16px 12px 12px}.app > .main{padding:20px 12px 28px}.nav button{font-size:11px;gap:5px}.card{padding:15px}.topbar button.primary{padding:10px 12px}.kpi span{font-size:10px}.focus-launch{flex-wrap:wrap}.kanban{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;scroll-behavior:auto !important}.breathe-orb.inhale,.breathe-orb.exhale{transform:none}}
+.file-input{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand">POMU POMU <span>Focus OS</span><div class="small">Do One Thing</div></div>
+    <div class="brand">POMU POMU<div class="small">Focus OS · Do One Thing</div></div>
     <div class="nav" id="nav">
       <button class="active" data-page="today">Today</button>
       <button data-page="tasks">Tasks</button>
@@ -130,19 +144,20 @@ textarea{width:100%;min-height:90px;resize:vertical}
       <button data-page="shutdown">Shutdown</button>
       <button data-page="settings">Data</button>
     </div>
+    <div class="sidebar-note">A little space to do good work.<span>One thing at a time.</span></div>
   </aside>
   <main class="main">
     <section id="today" class="section active">
-      <div class="topbar"><div><h1>Today</h1><div class="sub" id="todayDate"></div></div><button class="primary" onclick="go('focus')">Start Focus</button></div>
+      <div class="topbar"><div><div class="eyebrow">A fresh page, a little focus</div><h1>Today</h1><div class="sub" id="todayDate"></div></div><button class="primary" onclick="go('focus')">Start Focus</button></div>
+      <div class="grid daily-priorities">
+        <div class="card now-card"><h3>Now</h3><div class="card-caption">Just one thing. You have room to focus.</div><div id="nowTask"></div></div>
+        <div class="card next-card"><h3>Next</h3><div class="card-caption">A little queue. Up to three things for later.</div><div id="nextTasks"></div></div>
+      </div>
       <div class="kpis">
         <div class="kpi"><b id="kOpen">0</b><span>Open tasks</span></div>
         <div class="kpi"><b id="kDue">0</b><span>Due / overdue</span></div>
         <div class="kpi"><b id="kFocus">0m</b><span>Focused today</span></div>
         <div class="kpi"><b id="kInbox">0</b><span>Unprocessed inbox</span></div>
-      </div>
-      <div class="grid g2" style="margin-top:14px">
-        <div class="card"><h3>Now — only one</h3><div id="nowTask"></div></div>
-        <div class="card"><h3>Next — max 3</h3><div id="nextTasks"></div></div>
       </div>
       <div class="card" style="margin-top:14px"><h3>Live work board</h3><div class="kanban" id="miniBoard"></div></div>
     </section>
@@ -151,11 +166,11 @@ textarea{width:100%;min-height:90px;resize:vertical}
       <div class="topbar"><div><h1>Tasks</h1><div class="sub">Capture → clarify → execute. Do not keep tasks in your head.</div></div></div>
       <div class="card">
         <div class="row">
-          <input id="taskTitle" placeholder="Task title" style="flex:2;min-width:220px">
-          <select id="taskProject"><option>Lab Ops</option><option>Regulatory</option><option>Product</option><option>IT / Systems</option><option>Reporting</option><option>People</option><option>Personal</option></select>
-          <select id="taskPriority"><option value="1">P1</option><option value="2" selected>P2</option><option value="3">P3</option></select>
-          <select id="taskEstimate"><option value="15">15m</option><option value="30">30m</option><option value="60" selected>60m</option><option value="120">2h</option></select>
-          <input id="taskDue" type="date">
+          <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
+          <select id="taskProject" aria-label="Project"><option>Lab Ops</option><option>Regulatory</option><option>Product</option><option>IT / Systems</option><option>Reporting</option><option>People</option><option>Personal</option></select>
+          <select id="taskPriority" aria-label="Priority"><option value="1">P1</option><option value="2" selected>P2</option><option value="3">P3</option></select>
+          <select id="taskEstimate" aria-label="Time estimate"><option value="15">15m</option><option value="30">30m</option><option value="60" selected>60m</option><option value="120">2h</option></select>
+          <input id="taskDue" aria-label="Due date" type="date">
           <button class="primary" onclick="addTask()">Add</button>
         </div>
       </div>
@@ -173,7 +188,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
             </div>
             <button class="primary" onclick="launchImmersiveFocus()">Enter Focus</button>
           </div>
-          <select id="focusSelect" style="width:100%;margin-top:14px" onchange="selectFocusTask(this.value)"></select>
+          <select id="focusSelect" aria-label="Focus task" style="width:100%;margin-top:14px" onchange="selectFocusTask(this.value)"></select>
           <div class="timer" id="timer">25:00</div>
           <div class="focus-task" id="focusTaskName">Choose a task</div>
           <div class="row" style="margin-top:12px">
@@ -185,7 +200,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
         <div class="card">
           <h3>Distraction parking lot</h3>
           <div class="small">Thought appears? Park it here instead of context switching.</div>
-          <input id="distraction" class="big-input" placeholder="e.g. follow up MDA email..." style="margin-top:10px">
+          <input id="distraction" aria-label="Distraction to park" class="big-input" placeholder="e.g. follow up MDA email..." style="margin-top:10px">
           <button class="primary" style="margin-top:8px" onclick="captureDistraction()">Park it</button>
           <div id="parking" style="margin-top:10px"></div>
         </div>
@@ -197,7 +212,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
       <div class="grid g2">
         <div class="card">
           <h3>Quick capture</h3>
-          <textarea id="inboxText" placeholder="Dump an idea, problem, follow-up, question, or reminder..."></textarea>
+          <textarea id="inboxText" aria-label="Quick capture" placeholder="Dump an idea, problem, follow-up, question, or reminder..."></textarea>
           <div class="row">
             <button class="primary" onclick="captureInbox()">Capture</button>
             <button class="ghost" onclick="triageInbox()">Auto-triage all</button>
@@ -220,7 +235,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
         </div>
         <div class="card">
           <h3>Tomorrow anchor</h3>
-          <textarea id="tomorrowAnchor" placeholder="What is the one result that would make tomorrow successful?"></textarea>
+          <textarea id="tomorrowAnchor" aria-label="Tomorrow anchor" placeholder="What is the one result that would make tomorrow successful?"></textarea>
           <button class="primary" onclick="saveAnchor()">Save</button>
           <div class="small" style="margin-top:10px" id="savedAnchor"></div>
         </div>
@@ -232,7 +247,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
       <div class="card">
         <div class="row">
           <button class="primary" onclick="exportData()">Export JSON</button>
-          <label class="ghost" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></label>
+          <label class="ghost" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept=".json" class="file-input" onchange="importData(event)"></label>
           <button class="ghost danger" onclick="resetAll()">Reset prototype</button>
         </div>
         <p class="small">No server, no login, no external analytics. For production, connect this UI to Supabase/Postgres and an AI classification endpoint.</p>
@@ -480,7 +495,7 @@ renderAll();
     </div>
 
     <div class="focus-park">
-      <input id="overlayDistraction" placeholder="+ Park a thought without leaving focus" onkeydown="if(event.key==='Enter')parkOverlayThought()">
+      <input id="overlayDistraction" aria-label="Thought to park" placeholder="+ Park a thought without leaving focus" onkeydown="if(event.key==='Enter')parkOverlayThought()">
       <div class="focus-hint">Press Enter to park it · it will be waiting in Inbox later</div>
     </div>
   </div>
