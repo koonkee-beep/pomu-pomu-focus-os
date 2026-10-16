@@ -53,3 +53,11 @@ The prototype now includes an immersive breathing-focus screen:
 - one-task-only focus view
 - distraction parking without leaving focus mode
 - completion action that returns to Today
+
+## V1.3 custom task categories
+
+In **Tasks**, choose **Manage Categories** next to the category dropdown to add, rename, or delete categories. Names are trimmed and must be nonempty and unique (ignoring case). The original seven categories remain the starting defaults; your changes persist in this browser.
+
+Renaming updates every assigned task, including completed tasks. Deletion asks you to confirm and, when tasks use the category, lets you move them to another category or **Uncategorized**. It never deletes tasks. Uncategorized is always available, even if you remove every category. Inbox triage uses Personal when it exists and Uncategorized otherwise.
+
+Categories are included in the existing JSON export under `categories`, alongside the unchanged task `project` field. Older backups without category settings receive the defaults plus any custom project names already used by their tasks. Importing a backup replaces the current dataset as before. An explicitly empty category list stays empty unless imported tasks reference category names that need to be recovered.
