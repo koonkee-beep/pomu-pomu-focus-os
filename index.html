@@ -130,6 +130,16 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 @media(max-width:380px){.sidebar{padding:16px 12px 12px}.app > .main{padding:20px 12px 28px}.nav button{font-size:11px;gap:5px}.card{padding:15px}.topbar button.primary{padding:10px 12px}.kpi span{font-size:10px}.focus-launch{flex-wrap:wrap}.kanban{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;scroll-behavior:auto !important}.breathe-orb.inhale,.breathe-orb.exhale{transform:none}}
 .file-input{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* V1.3 category management follows the existing card and form system. */
+.category-picker{display:flex;flex:1 1 190px;flex-direction:column;gap:6px;min-width:0}
+.category-picker select{width:100%}.category-manage{font-size:11px;align-self:flex-start}
+.category-manager{margin-top:14px}.category-manager[hidden],.category-confirm[hidden],#categoryReassignment[hidden]{display:none}
+.category-manager .topbar{margin-bottom:8px}.category-manager .topbar h3{margin:0}
+.category-add{margin:18px 0 10px}.category-add label,#categoryReassignment label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.category-add input{flex:1 1 160px}.category-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.category-row input{width:100%}.category-feedback{font-size:12px;color:var(--sage-ink);overflow-wrap:anywhere}.category-feedback:empty{display:none}.category-feedback.danger{color:var(--bad)}
+.category-confirm{background:#FFF9F3;border:1px solid #E9CFBA;padding:18px;border-radius:12px;margin-top:16px;overflow-wrap:anywhere}.category-confirm p{font-size:13px}.category-confirm select{width:100%;margin-bottom:15px}
+@media(max-width:380px){.category-row{gap:5px}.category-row button.ghost{padding:9px 8px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -167,13 +177,33 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
       <div class="card">
         <div class="row">
           <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
-          <select id="taskProject" aria-label="Project"><option>Lab Ops</option><option>Regulatory</option><option>Product</option><option>IT / Systems</option><option>Reporting</option><option>People</option><option>Personal</option></select>
+          <div class="category-picker">
+            <select id="taskProject" aria-label="Task category"></select>
+            <button type="button" class="ghost category-manage" id="manageCategoriesBtn" aria-expanded="false" aria-controls="categoryManager" onclick="toggleCategoryManager()">Manage Categories</button>
+          </div>
           <select id="taskPriority" aria-label="Priority"><option value="1">P1</option><option value="2" selected>P2</option><option value="3">P3</option></select>
           <select id="taskEstimate" aria-label="Time estimate"><option value="15">15m</option><option value="30">30m</option><option value="60" selected>60m</option><option value="120">2h</option></select>
           <input id="taskDue" aria-label="Due date" type="date">
           <button class="primary" onclick="addTask()">Add</button>
         </div>
       </div>
+      <section class="card category-manager" id="categoryManager" aria-labelledby="categoryManagerTitle" hidden>
+        <div class="topbar"><h3 id="categoryManagerTitle">Manage Categories</h3><button type="button" class="ghost" onclick="toggleCategoryManager()">Close</button></div>
+        <p class="small">Make room for your own way of working. Uncategorized is always available.</p>
+        <form class="category-add" onsubmit="event.preventDefault();addCategory()" novalidate>
+          <label for="newCategoryName">New category</label>
+          <div class="row"><input id="newCategoryName" aria-describedby="categoryError" placeholder="e.g. Deep work" autocomplete="off"><button class="primary" type="submit">Add category</button></div>
+        </form>
+        <p class="category-feedback danger" id="categoryError" role="alert"></p>
+        <p class="category-feedback" id="categoryStatus" role="status"></p>
+        <div id="categoryList"></div>
+        <div class="category-confirm" id="categoryDeleteConfirm" hidden>
+          <h3>Delete category?</h3>
+          <p id="categoryDeleteMessage"></p>
+          <div id="categoryReassignment"><label for="categoryReplacement">Move assigned tasks to</label><select id="categoryReplacement" aria-describedby="categoryDeleteMessage"></select></div>
+          <div class="row"><button class="ghost" type="button" onclick="cancelCategoryDelete()">Cancel</button><button class="primary" type="button" id="confirmCategoryDeleteBtn" aria-describedby="categoryDeleteMessage" onclick="confirmCategoryDelete()">Delete category</button></div>
+        </div>
+      </section>
       <div class="card" style="margin-top:14px"><div id="taskList"></div></div>
     </section>
 
@@ -256,7 +286,112 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
   </main>
 </div>
 <script>
+/* Categories retain task.project and the existing backup/storage format. */
+const DEFAULT_CATEGORIES = ["Lab Ops","Regulatory","Product","IT / Systems","Reporting","People","Personal"];
+function categoryKey(name){return name.trim().toLowerCase()}
+function normalizeCategories(data){
+  const names=Array.isArray(data.categories)?data.categories:DEFAULT_CATEGORIES;
+  const categories=[];
+  function include(name){
+    if(typeof name!=="string" || !name.trim() || categoryKey(name)==="uncategorized")return "";
+    const clean=name.trim(), existing=categories.find(x=>categoryKey(x)===categoryKey(clean));
+    if(existing)return existing;
+    categories.push(clean);return clean;
+  }
+  names.forEach(include);
+  // Recover legacy/custom project names rather than orphaning their tasks.
+  data.tasks.forEach(task=>{task.project=include(task.project)});
+  data.categories=categories;
+  return data;
+}
+let pendingCategoryDelete=null;
+function categoryFeedback(message,error=false){
+  document.getElementById("categoryError").textContent=error?message:"";
+  document.getElementById("categoryStatus").textContent=error?"":message;
+}
+function toggleCategoryManager(){
+  const panel=document.getElementById("categoryManager"),open=panel.hidden;
+  panel.hidden=!open;
+  document.getElementById("manageCategoriesBtn").setAttribute("aria-expanded",String(open));
+  if(!open)cancelCategoryDelete(false);
+  if(open)document.getElementById("newCategoryName").focus();
+  else document.getElementById("manageCategoriesBtn").focus();
+}
+function renderCategories(){
+  // Any intervening change invalidates the deletion preview and its task count.
+  if(pendingCategoryDelete!==null)cancelCategoryDelete(false);
+  const select=document.getElementById("taskProject"),selected=select.value,hadOptions=select.options.length>0;
+  select.replaceChildren(...db.categories.map(name=>new Option(name,name)),new Option("Uncategorized",""));
+  if(hadOptions && [...select.options].some(option=>option.value===selected))select.value=selected;
+  document.getElementById("categoryList").innerHTML=db.categories.map((name,index)=>`
+    <form class="category-row" novalidate onsubmit="event.preventDefault();renameCategory(${index})">
+      <label class="file-input" for="categoryName${index}">Category name: ${esc(name)}</label>
+      <input id="categoryName${index}" aria-describedby="categoryError" value="${esc(name)}" required>
+      <button class="ghost" type="submit">Rename</button>
+      <button class="ghost danger" id="categoryRemove${index}" type="button" onclick="prepareCategoryDelete(${index})" aria-label="Delete ${esc(name)}">Delete</button>
+    </form>`).join("") || '<p class="small">No custom categories. New tasks can still be uncategorized.</p>';
+}
+function validCategoryName(value,current=null){
+  const name=value.trim();
+  if(!name){categoryFeedback("Enter a category name.",true);return null}
+  if(categoryKey(name)==="uncategorized"){categoryFeedback("Uncategorized is always available. Choose another category name.",true);return null}
+  if(db.categories.some(x=>x!==current && categoryKey(x)===categoryKey(name))){categoryFeedback("That category already exists. Choose a different name.",true);return null}
+  return name;
+}
+function addCategory(){
+  const input=document.getElementById("newCategoryName"),name=validCategoryName(input.value);
+  if(name===null)return;
+  cancelCategoryDelete(false);
+  db.categories.push(name);input.value="";save();
+  document.getElementById("taskProject").value=name;
+  categoryFeedback(`Added ${name}.`);input.focus();
+}
+function renameCategory(index){
+  const old=db.categories[index];if(old===undefined)return;
+  const name=validCategoryName(document.getElementById(`categoryName${index}`).value,old);
+  if(name===null)return;
+  const selected=document.getElementById("taskProject").value===old;
+  cancelCategoryDelete(false);
+  db.categories[index]=name;
+  db.tasks.forEach(task=>{if(task.project===old)task.project=name});
+  save();if(selected)document.getElementById("taskProject").value=name;
+  categoryFeedback(`Renamed ${old} to ${name}. Assigned tasks were updated.`);
+  document.getElementById(`categoryName${index}`).focus();
+}
+function prepareCategoryDelete(index){
+  const name=db.categories[index];if(name===undefined)return;
+  pendingCategoryDelete=name;categoryFeedback("");
+  const count=db.tasks.filter(task=>task.project===name).length;
+  document.getElementById("categoryDeleteMessage").textContent=count
+    ? `${count} task${count===1?" uses":"s use"} “${name}”. Choose a replacement before confirming. All tasks will be kept.`
+    : `Delete “${name}”? No tasks use this category.`;
+  document.getElementById("categoryReassignment").hidden=count===0;
+  document.getElementById("categoryReplacement").replaceChildren(new Option("Uncategorized",""),...db.categories.filter(x=>x!==name).map(x=>new Option(x,x)));
+  document.getElementById("categoryDeleteConfirm").hidden=false;
+  document.getElementById(count?"categoryReplacement":"confirmCategoryDeleteBtn").focus();
+}
+function cancelCategoryDelete(restoreFocus=true){
+  const index=db.categories.indexOf(pendingCategoryDelete);
+  pendingCategoryDelete=null;
+  document.getElementById("categoryDeleteConfirm").hidden=true;
+  if(restoreFocus && index>=0)document.getElementById(`categoryRemove${index}`)?.focus();
+}
+function confirmCategoryDelete(){
+  const name=pendingCategoryDelete;if(name===null || !db.categories.includes(name))return;
+  const replacement=document.getElementById("categoryReplacement").value;
+  if(replacement!=="" && (!db.categories.includes(replacement) || replacement===name))return;
+  const selected=document.getElementById("taskProject").value===name;
+  db.tasks.forEach(task=>{if(task.project===name)task.project=replacement});
+  db.categories=db.categories.filter(x=>x!==name);
+  cancelCategoryDelete(false);save();
+  if(selected)document.getElementById("taskProject").value=replacement;
+  categoryFeedback(`Deleted ${name}. Assigned tasks were moved to ${replacement||"Uncategorized"}.`);
+  document.getElementById("newCategoryName").focus();
+}
+function inboxCategory(){return db.categories.includes("Personal")?"Personal":""}
+
 const DEFAULT = {
+ categories:[...DEFAULT_CATEGORIES],
  tasks:[
   {id:1,title:"Review priority follow-ups",project:"Regulatory",priority:1,estimate:30,due:"",status:"doing",done:false},
   {id:2,title:"Consolidate product development decisions",project:"Product",priority:2,estimate:60,due:"",status:"todo",done:false},
@@ -265,6 +400,7 @@ const DEFAULT = {
  inbox:[], focusMinutes:{}, parking:[], anchor:""
 };
 let db = JSON.parse(localStorage.getItem("kikiFocusOS")||"null") || structuredClone(DEFAULT);
+normalizeCategories(db);
 let seconds=1500, timerHandle=null, activeTaskId=null;
 
 function save(){localStorage.setItem("kikiFocusOS",JSON.stringify(db));renderAll()}
@@ -273,7 +409,7 @@ document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.
 
 function addTask(titleOverride, projectOverride){
  const title=titleOverride||document.getElementById("taskTitle").value.trim(); if(!title)return;
- db.tasks.push({id:Date.now(),title,project:projectOverride||document.getElementById("taskProject").value,priority:+document.getElementById("taskPriority").value,estimate:+document.getElementById("taskEstimate").value,due:document.getElementById("taskDue").value,status:"todo",done:false});
+ db.tasks.push({id:Date.now(),title,project:projectOverride??document.getElementById("taskProject").value,priority:+document.getElementById("taskPriority").value,estimate:+document.getElementById("taskEstimate").value,due:document.getElementById("taskDue").value,status:"todo",done:false});
  if(!titleOverride) document.getElementById("taskTitle").value=""; save();
 }
 function setDone(id,v){let t=db.tasks.find(x=>x.id==id);if(t){t.done=v;t.status=v?"done":t.status==="done"?"todo":t.status;save()}}
@@ -287,7 +423,7 @@ function score(t){
 function openTasks(){return db.tasks.filter(t=>!t.done).sort((a,b)=>score(b)-score(a))}
 function taskHTML(t){
  return `<div class="task"><input type="checkbox" ${t.done?"checked":""} onchange="setDone(${t.id},this.checked)">
- <div><div class="task-title">${esc(t.title)}</div><div class="meta"><span class="badge">${esc(t.project)}</span><span class="badge p${t.priority}">P${t.priority}</span><span class="badge">${t.estimate}m</span>${t.due?`<span class="badge">Due ${t.due}</span>`:""} <select onchange="setStatus(${t.id},this.value)" style="padding:2px 5px;font-size:11px"><option ${t.status==="todo"?"selected":""} value="todo">To do</option><option ${t.status==="doing"?"selected":""} value="doing">Doing</option><option ${t.status==="waiting"?"selected":""} value="waiting">Waiting</option><option ${t.status==="done"?"selected":""} value="done">Done</option></select></div></div>
+ <div><div class="task-title">${esc(t.title)}</div><div class="meta"><span class="badge">${esc(t.project||"Uncategorized")}</span><span class="badge p${t.priority}">P${t.priority}</span><span class="badge">${t.estimate}m</span>${t.due?`<span class="badge">Due ${t.due}</span>`:""} <select onchange="setStatus(${t.id},this.value)" style="padding:2px 5px;font-size:11px"><option ${t.status==="todo"?"selected":""} value="todo">To do</option><option ${t.status==="doing"?"selected":""} value="doing">Doing</option><option ${t.status==="waiting"?"selected":""} value="waiting">Waiting</option><option ${t.status==="done"?"selected":""} value="done">Done</option></select></div></div>
  <button class="ghost danger" onclick="delTask(${t.id})">×</button></div>`;
 }
 function renderTasks(){document.getElementById("taskList").innerHTML=db.tasks.length?db.tasks.sort((a,b)=>a.done-b.done||score(b)-score(a)).map(taskHTML).join(""):"<div class='small'>No tasks yet.</div>"}
@@ -324,8 +460,8 @@ function finishFocus(){if(!activeTaskId)return;setDone(activeTaskId,true);active
 function captureDistraction(){let el=document.getElementById("distraction"),txt=el.value.trim();if(!txt)return;db.parking.push({id:Date.now(),text:txt,ts:new Date().toISOString()});db.inbox.push({id:Date.now()+1,text:txt,type:"distraction",processed:false,ts:new Date().toISOString()});el.value="";save()}
 function captureInbox(){let el=document.getElementById("inboxText"),txt=el.value.trim();if(!txt)return;db.inbox.push({id:Date.now(),text:txt,type:"raw",processed:false,ts:new Date().toISOString()});el.value="";save()}
 function classify(text){let s=text.toLowerCase();if(/follow|send|email|check|review|prepare|draft|call|meeting|submit|update/.test(s))return "task";if(/idea|maybe|could|what if|consider/.test(s))return "idea";if(/wait|pending|await|reply/.test(s))return "waiting";return "note"}
-function triageOne(id){let x=db.inbox.find(i=>i.id==id);if(!x)return;x.type=classify(x.text);if(x.type==="task"){addTask(x.text,"Personal");x.processed=true}else{x.processed=true;save()}}
-function triageInbox(){db.inbox.filter(x=>!x.processed).forEach(x=>{x.type=classify(x.text); if(x.type==="task"){db.tasks.push({id:Date.now()+Math.random(),title:x.text,project:"Personal",priority:2,estimate:30,due:"",status:"todo",done:false})} x.processed=true});save()}
+function triageOne(id){let x=db.inbox.find(i=>i.id==id);if(!x)return;x.type=classify(x.text);if(x.type==="task"){x.processed=true;addTask(x.text,inboxCategory())}else{x.processed=true;save()}}
+function triageInbox(){db.inbox.filter(x=>!x.processed).forEach(x=>{x.type=classify(x.text); if(x.type==="task"){db.tasks.push({id:Date.now()+Math.random(),title:x.text,project:inboxCategory(),priority:2,estimate:30,due:"",status:"todo",done:false})} x.processed=true});save()}
 function renderInbox(){document.getElementById("inboxList").innerHTML=db.inbox.length?db.inbox.slice().reverse().map(x=>`<div class="note"><div>${esc(x.text)}</div><div class="meta"><span class="badge">${x.type}</span>${x.processed?"processed":`<button class="ghost" onclick="triageOne(${x.id})">Triage</button>`}</div></div>`).join(""):"<div class='small'>Inbox empty.</div>"}
 function generateShutdown(){
  const open=openTasks(), doing=open.filter(t=>t.status==="doing"), waiting=open.filter(t=>t.status==="waiting"), inbox=db.inbox.filter(x=>!x.processed);
@@ -340,10 +476,28 @@ function generateShutdown(){
 function saveAnchor(){db.anchor=document.getElementById("tomorrowAnchor").value.trim();save()}
 function renderAnchor(){document.getElementById("tomorrowAnchor").value=db.anchor||"";document.getElementById("savedAnchor").textContent=db.anchor?`Saved: ${db.anchor}`:""}
 function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pomu-pomu-focus-os.json";a.click()}
-function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save()}catch{alert("Invalid JSON")}};r.readAsText(f)}
-function resetAll(){if(confirm("Reset all local prototype data?")){db=structuredClone(DEFAULT);save()}}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.tasks) || !Array.isArray(data.inbox) || !Array.isArray(data.parking)
+        || !data.focusMinutes || typeof data.focusMinutes!=="object" || Array.isArray(data.focusMinutes)
+        || [...data.tasks,...data.inbox,...data.parking].some(item=>!item || typeof item!=="object" || Array.isArray(item))
+        || (data.categories!==undefined && (!Array.isArray(data.categories) || data.categories.some(name=>typeof name!=="string")))){
+        throw new Error("Invalid backup");
+      }
+      normalizeCategories(data);
+      cancelCategoryDelete(false);db=data;save();categoryFeedback("");
+    }catch{alert("Invalid JSON backup. Your existing data has not been replaced.")}
+    e.target.value="";
+  };
+  reader.readAsText(file);
+}
+function resetAll(){if(confirm("Reset all local prototype data?")){db=structuredClone(DEFAULT);cancelCategoryDelete(false);save();categoryFeedback("")}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function renderAll(){document.getElementById("todayDate").textContent=new Date().toLocaleString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});renderTasks();renderToday();renderFocus();renderInbox();generateShutdown();renderAnchor();timerPaint()}
+function renderAll(){document.getElementById("todayDate").textContent=new Date().toLocaleString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});renderCategories();renderTasks();renderToday();renderFocus();renderInbox();generateShutdown();renderAnchor();timerPaint()}
 
 /* --- V1 immersive breathing focus --- */
 let focusLengthMin = 25;
