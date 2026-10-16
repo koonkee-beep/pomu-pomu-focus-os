@@ -1,12 +1,30 @@
-# V1.4 — Interactive Pomu Companion
+# V1.4 — Companion UI refinement
 
-Professional is the default (64px artwork, finite action reactions). Data → Pomu appearance switches to Cozy (84px, expressive celebration, short speech bubbles with a 15-second cooldown). The new `pomuAppearance` localStorage key is separate from `kikiFocusOS`; task/category data and JSON backup format are unchanged.
+The existing companion events and appearance preference are retained. Today now places Pomu beside the greeting in a compact welcome area; Tasks also shares its heading row with Pomu. NOW/NEXT no longer sit below a separate companion row. The ivory, peach, sage, and text colours are unchanged.
 
-Today and Tasks rest on idle; Focus and the immersive timer rest on focused; Shutdown rests on sleepy. Reactions last 1.6 seconds, then restore the relevant resting image. Navigation cancels temporary reactions. CSS animations run once and are disabled under prefers-reduced-motion. No dependencies, sound, notification, or replacement illustrations were added. Removed the existing timer completion vibration. Initial rendering now waits for DOMContentLoaded so timer overlay controls exist at startup.
+| Appearance | Desktop | Mobile ≤760px | Narrow mobile ≤380px |
+| --- | --- | --- | --- |
+| Professional (default) | 80px | 64px | 56px |
+| Cozy | 112px | 88px | 72px |
 
-## Release issue: supplied artwork has dark backgrounds
+These are image element widths; object-fit preserves the supplied proportions. The mobile welcome puts the greeting beside Pomu and the focus button, without overlap. Welcome speech is suppressed at widths ≤1100px to keep controls clear. Cozy messages remain available where space permits, with the existing 15-second cooldown.
 
-All four original PNG byte streams are preserved exactly under `assets/pomu/`. They are RGBA but are **not transparent cutouts**: no pixel has alpha 0, and over 98% of pixels in each image are fully opaque. Their dark rectangular backgrounds remain visible in the light UI. No background removal, masking, blending, or replacement artwork was applied. Obtain approved transparent exports before release.
+## Reactions
+
+- Task creation: happy bounce, 0.9 seconds.
+- Completion: happy jump, 1.2 seconds; Cozy adds two small peach/sage CSS glints and a slightly larger jump.
+- Start focus: focused image with a gentle 0.9-second entrance.
+- Pause: idle image with a brief tilt, then focused resting image.
+- Complete focus: short happy celebration, then focused resting image.
+- Enter Shutdown: sleepy image with a gentle 0.9-second entrance; sleepy remains the resting state.
+
+Temporary reactions reset after 1.3 seconds. Rerenders do not touch companion animation state; only actions trigger reactions. While the immersive overlay is open, only its companion reacts. Professional has smaller movement and no speech or extra glints. Reduced motion disables all companion animations and glints. No loops, sounds, notifications, frameworks, or runtime dependencies were added.
+
+## Unresolved release blocker: transparency
+
+**Background removal is not complete.** All four original PNGs have dark backgrounds and no fully transparent pixels. An automated removal attempt returned a combined, upscaled image with visible edge artifacts and changed details; it was rejected rather than replacing Pomu with altered illustrations. None of that output is used in this branch.
+
+The original assets remain byte-for-byte intact in `assets/pomu/`, including faces, outlines, sparkles, laptop, sleeping symbols, soft shading, and proportions. Consequently dark rectangles remain visible on ivory and white. The clean transparent-edge/no-dark-box requirements cannot be marked passed. Approved transparent source exports or a carefully retouched cutout of the original artwork are still needed before release. CSS masking/blending is not used to conceal this issue.
 
 | Asset | Dimensions | Alpha range | Fully transparent pixels |
 | --- | --- | --- | --- |
@@ -15,69 +33,39 @@ All four original PNG byte streams are preserved exactly under `assets/pomu/`. T
 | pomu_focus.png | 159 × 112 | 170–255 | 0 |
 | pomu_sleepy.png | 137 × 133 | 128–255 | 0 |
 
+[Original asset inspection on ivory and white](screenshots/asset-inspection.png). This is evidence of the remaining blocker, not a successful transparency check.
+
 ## Verification
 
-Automated Chromium checks via Playwright against a local HTTP server; no browser JavaScript errors. Browser tooling was used only for verification, not added to the app. Completion was exercised by setting the timer's in-memory remaining seconds to 1, then waiting for its real interval callback (a full 25-minute wall-clock session was not run). Screenshots contain disposable verification data.
+118 browser assertions passed in Chromium through Playwright against a local HTTP server. No JavaScript errors. These checks do not include a transparency pass.
 
-- Passed: Default professional mode
-- Passed: Image loads: idle
-- Passed: Image loads: happy
-- Passed: Image loads: focus
-- Passed: Image loads: sleepy
-- Passed: Task creation happy reaction
-- Passed: Temporary reaction returns to idle
-- Passed: Task completion celebration
-- Passed: Status completion celebration
-- Passed: Appearance leaves task storage unchanged
-- Passed: Cozy survives refresh
-- Passed: Custom category creation
-- Passed: Task retains custom category
-- Passed: Focus start reaction
-- Passed: Timer counts down
-- Passed: Pause stops timer
-- Passed: Focus pause reaction
-- Passed: Pause returns to focus resting image
-- Passed: Focus completion happy reaction and logged minutes
-- Passed: Focus completion returns to resting state
-- Passed: Shutdown sleepy Pomu
-- Passed: Shutdown anchor saved
-- Passed: JSON roundtrip retains custom tasks/categories
-- Passed: Reduced motion disables companion animation
-- Passed: Reduced motion keeps orb still
-- Passed: No horizontal overflow: 1440px today
-- Passed: No horizontal overflow: 1440px tasks
-- Passed: No horizontal overflow: 1440px focus
-- Passed: No horizontal overflow: 1440px shutdown
-- Passed: No horizontal overflow: 1440px settings
-- Passed: Focus overlay fits: 1440px
-- Passed: No horizontal overflow: 390px today
-- Passed: No horizontal overflow: 390px tasks
-- Passed: No horizontal overflow: 390px focus
-- Passed: No horizontal overflow: 390px shutdown
-- Passed: No horizontal overflow: 390px settings
-- Passed: Focus overlay fits: 390px
-- Passed: No horizontal overflow: 320px today
-- Passed: No horizontal overflow: 320px tasks
-- Passed: No horizontal overflow: 320px focus
-- Passed: No horizontal overflow: 320px shutdown
-- Passed: No horizontal overflow: 320px settings
-- Passed: Focus overlay fits: 320px
-- Passed: No browser JavaScript errors
+- Desktop Professional/Cozy: measured 80/112px, compact welcome, no overlap with greeting or focus button.
+- Mobile Professional/Cozy: measured 64/88px at 390px, compact welcome, no overlap.
+- Layouts and immersive timer fit 1440, 1024, 768, 390, and 320px widths without horizontal scrolling.
+- Active reactions and speech fit both modes at those five widths.
+- Images load; create/complete/status-complete reactions and resting-state restoration work.
+- Ordinary renderAll preserves the running CSS animation object rather than restarting it.
+- Focus countdown, pause, session completion/logging, task completion, and return to Today work.
+- Shutdown sleepy transition and saving tomorrow's anchor work.
+- Appearance selection survives refresh and does not change task storage.
+- Custom category creation, rename, deletion with reassignment, and task retention work.
+- JSON export/import preserves custom task/category data and excludes appearance preference.
+- Reduced motion disables companion movement and CSS sparkles; existing orb remains still.
 
-- Passed: Cozy speech bubble
-- Passed: Switch back to Professional
-- Passed: Complete focus task returns to Today with celebration
+Session completion was exercised by setting in-memory seconds to 1 and waiting for the real timer callback, rather than waiting a full 25 minutes. Browser verification tools were not added as app dependencies. Screenshots of the four modes use the default task data; workflow screenshots may contain disposable verification tasks.
 
-## Screenshots
+## Updated screenshots
 
-- [Desktop Today — Professional](screenshots/desktop-today.png)
-- [Desktop focus — Cozy](screenshots/desktop-focus-cozy.png)
-- [Desktop shutdown](screenshots/desktop-shutdown.png)
-- [Mobile Today — Cozy](screenshots/mobile-today.png)
-- [Mobile Focus](screenshots/mobile-focus.png)
-- [Mobile immersive timer](screenshots/mobile-focus-overlay.png)
-- [Mobile Tasks](screenshots/mobile-tasks.png)
-- [Mobile Shutdown](screenshots/mobile-shutdown.png)
-- [Mobile appearance selector](screenshots/mobile-settings.png)
+| Desktop | Mobile |
+| --- | --- |
+| [Professional](screenshots/desktop-professional.png) | [Professional](screenshots/mobile-professional.png) |
+| [Cozy](screenshots/desktop-cozy.png) | [Cozy](screenshots/mobile-cozy.png) |
 
-Rollback: revert this change; existing task storage and backups need no migration. The independent appearance key can remain harmlessly in localStorage.
+- [Cozy immersive focus](screenshots/desktop-focus-cozy.png)
+- [Mobile immersive focus](screenshots/mobile-focus-overlay.png)
+- [Shutdown](screenshots/desktop-shutdown.png)
+- [Appearance selector](screenshots/mobile-settings.png)
+
+## Data and rollback
+
+The existing `kikiFocusOS` structure, `pomuAppearance` preference key, task/category code, JSON backup format, and timer accounting remain unchanged by this refinement. No migration is needed. Revert this refinement commit to restore the earlier placement and animation styling.

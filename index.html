@@ -145,31 +145,55 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 @media(max-width:380px){.category-row{gap:5px}.category-row button.ghost{padding:9px 8px;font-size:12px}}
 
 /* V1.4: finite, event-driven companion reactions; no floating overlays. */
-.pomu{display:flex;align-items:center;gap:12px;min-height:76px;margin:0 0 16px;pointer-events:none}
-.pomu img{width:64px;height:64px;object-fit:contain;flex:none}
-.pomu-speech{font-size:12px;color:var(--muted);max-width:190px;overflow-wrap:anywhere}
+.pomu{--pomu-size:80px;--pomu-lift:-4px;--pomu-tilt:3deg;position:relative;display:flex;align-items:center;gap:12px;min-height:var(--pomu-size);margin:0 0 12px;pointer-events:none;flex:none;max-width:100%}
+.pomu img{width:var(--pomu-size);height:var(--pomu-size);object-fit:contain;flex:none}
+.pomu-speech{font-size:12px;color:var(--muted);max-width:170px;min-width:0;overflow-wrap:anywhere}
 .pomu-speech:empty{display:none}
+body[data-appearance="cozy"] .pomu{--pomu-size:112px;--pomu-lift:-8px;--pomu-tilt:5deg}
 body[data-appearance="cozy"] .pomu-speech:not(:empty){background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px}
-body[data-appearance="cozy"] .pomu{min-height:92px}
-body[data-appearance="cozy"] .pomu img{width:84px;height:84px}
 body[data-appearance="professional"] .pomu-speech{display:none}
-.pomu[data-reaction] img{animation:pomu-nod 1.5s ease both}
-.pomu[data-reaction="entrance"] img{animation-name:pomu-entrance}
+.today-welcome{display:flex;align-items:center;gap:22px;min-width:0}
+.welcome-copy{min-width:0}
+.today-welcome .pomu{margin:0}
+/* The welcome keeps one footprint; a reaction cannot move the priority cards. */
+.today-welcome .pomu-speech{position:absolute;left:calc(100% + 12px);width:150px}
+.pomu[data-reaction] img{animation:pomu-nod .9s ease both}
+.pomu[data-reaction="entrance"] img,.pomu[data-reaction="start"] img,.pomu[data-reaction="shutdown"] img{animation-name:pomu-entrance}
 .pomu[data-reaction="create"] img{animation-name:pomu-bounce}
-.pomu[data-reaction="celebrate"] img{animation-name:pomu-celebrate}
-body[data-appearance="cozy"] .pomu[data-reaction] img{animation-timing-function:ease-in-out}
+.pomu[data-reaction="pause"] img{animation-name:pomu-tilt}
+.pomu[data-reaction="celebrate"] img{animation:pomu-celebrate 1.2s ease both}
+/* Two tiny CSS glints appear only for a Cozy celebration. */
+body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::before,
+body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{content:"";position:absolute;top:15%;left:4px;width:7px;height:7px;background:var(--accent);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pomu-glint 1.2s ease both}
+body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(var(--pomu-size) - 7px);top:5%;width:5px;height:5px;background:var(--good)}
 .timer-companion{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
 .timer-companion .pomu{margin:12px 0}
 .overlay-companion{margin:0;justify-content:center}
 .appearance-setting{margin-bottom:18px}
 .appearance-setting label{display:block;font-weight:600;margin-bottom:8px}
-@keyframes pomu-entrance{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes pomu-entrance{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}
 @keyframes pomu-nod{0%,100%{transform:none}40%{transform:translateY(2px)}}
-@keyframes pomu-bounce{0%,45%,100%{transform:none}22%{transform:translateY(-4px)}}
-@keyframes pomu-celebrate{0%,70%,100%{transform:none}25%{transform:translateY(-4px) rotate(-3deg)}48%{transform:rotate(3deg)}}
-body[data-appearance="cozy"] .pomu[data-reaction="celebrate"] img{animation-name:pomu-cozy-celebrate}
-@keyframes pomu-cozy-celebrate{0%,75%,100%{transform:none}25%{transform:translateY(-7px) rotate(-5deg)}50%{transform:translateY(-2px) rotate(5deg)}}
-@media(prefers-reduced-motion:reduce){.pomu[data-reaction] img{animation:none !important}}
+@keyframes pomu-tilt{0%,100%{transform:none}40%{transform:rotate(var(--pomu-tilt))}}
+@keyframes pomu-bounce{0%,55%,100%{transform:none}28%{transform:translateY(var(--pomu-lift))}}
+@keyframes pomu-celebrate{0%,80%,100%{transform:none}20%{transform:scale(1.02,.98)}42%{transform:translateY(var(--pomu-lift)) rotate(calc(-1 * var(--pomu-tilt)))}65%{transform:scale(1.02,.98)}}
+@keyframes pomu-glint{0%,100%{opacity:0;transform:scale(.6)}35%{opacity:.8;transform:translateY(-4px) scale(1)}70%{opacity:0;transform:translateY(-7px) scale(.7)}}
+@media(max-width:1100px){.topbar .pomu-speech{display:none}}
+@media(max-width:760px){
+ .pomu{--pomu-size:64px;gap:9px}
+ body[data-appearance="cozy"] .pomu{--pomu-size:88px}
+ #today .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center}
+ .today-welcome{display:contents}
+ .welcome-copy{grid-column:1;grid-row:1 / span 2;align-self:center}
+ .today-welcome .pomu{grid-column:2;grid-row:1;justify-self:center}
+ #today .topbar > button{grid-column:2;grid-row:2;padding:8px 12px;font-size:12px;min-height:38px}
+ #today .eyebrow{font-size:9px;letter-spacing:.1em}
+}
+@media(max-width:380px){
+ .pomu{--pomu-size:56px}
+ body[data-appearance="cozy"] .pomu{--pomu-size:72px}
+ #today .topbar{gap:7px 10px}
+}
+@media(prefers-reduced-motion:reduce){.pomu[data-reaction] img,.pomu[data-reaction]::before,.pomu[data-reaction]::after{animation:none !important}.pomu[data-reaction]::before,.pomu[data-reaction]::after{display:none}}
 </style>
 </head>
 <body>
@@ -188,8 +212,13 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"] img{animation-name
   </aside>
   <main class="main">
     <section id="today" class="section active">
-      <div class="topbar"><div><div class="eyebrow">A fresh page, a little focus</div><h1>Today</h1><div class="sub" id="todayDate"></div></div><button class="primary" onclick="go('focus')">Start Focus</button></div>
-      <div class="pomu" data-pomu="today" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="72" height="72"><span class="pomu-speech"></span></div>
+      <div class="topbar">
+        <div class="today-welcome">
+          <div class="welcome-copy"><div class="eyebrow">A fresh page, a little focus</div><h1>Today</h1><div class="sub" id="todayDate"></div></div>
+          <div class="pomu" data-pomu="today" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="80" height="80"><span class="pomu-speech"></span></div>
+        </div>
+        <button class="primary" onclick="go('focus')">Start Focus</button>
+      </div>
       <div class="grid daily-priorities">
         <div class="card now-card"><h3>Now</h3><div class="card-caption">Just one thing. You have room to focus.</div><div id="nowTask"></div></div>
         <div class="card next-card"><h3>Next</h3><div class="card-caption">A little queue. Up to three things for later.</div><div id="nextTasks"></div></div>
@@ -204,8 +233,9 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"] img{animation-name
     </section>
 
     <section id="tasks" class="section">
-      <div class="topbar"><div><h1>Tasks</h1><div class="sub">Capture → clarify → execute. Do not keep tasks in your head.</div></div></div>
-      <div class="pomu" data-pomu="tasks" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="72" height="72"><span class="pomu-speech"></span></div>
+      <div class="topbar"><div><h1>Tasks</h1><div class="sub">Capture → clarify → execute. Do not keep tasks in your head.</div></div>
+        <div class="pomu" data-pomu="tasks" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="80" height="80"><span class="pomu-speech"></span></div>
+      </div>
       <div class="card">
         <div class="row task-create-row">
           <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
@@ -346,13 +376,13 @@ function reactPomu(state,reaction,message=""){
   const speak=document.body.dataset.appearance==="cozy" && message && Date.now()-pomuLastSpeech>15000;
   let spoken=false;
   document.querySelectorAll("[data-pomu]").forEach(el=>{
-    if(!el.getClientRects().length)return;
+    if(!el.getClientRects().length || (document.getElementById("focusOverlay").classList.contains("active") && el.dataset.pomu!=="overlay"))return;
     const img=el.querySelector("img");img.src=`assets/pomu/pomu_${state}.png`;img.alt=`Pomu, your ${state} companion`;
     void img.offsetWidth;el.dataset.reaction=reaction;
     if(speak){el.querySelector(".pomu-speech").textContent=message;spoken=true}
   });
   if(spoken)pomuLastSpeech=Date.now();
-  pomuReactionTimer=setTimeout(restPomu,1600);
+  pomuReactionTimer=setTimeout(restPomu,1300);
 }
 function initPomu(){
   let mode="professional";try{mode=localStorage.getItem(POMU_APPEARANCE_KEY)}catch{}
@@ -480,7 +510,7 @@ normalizeCategories(db);
 let seconds=1500, timerHandle=null, activeTaskId=null;
 
 function save(){localStorage.setItem("kikiFocusOS",JSON.stringify(db));renderAll()}
-function go(page){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));document.getElementById(page).classList.add("active");document.querySelector(`#nav button[data-page="${page}"]`)?.classList.add("active");renderAll();clearTimeout(pomuReactionTimer);restPomu()}
+function go(page){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));document.getElementById(page).classList.add("active");document.querySelector(`#nav button[data-page="${page}"]`)?.classList.add("active");renderAll();clearTimeout(pomuReactionTimer);restPomu();if(page==="shutdown")reactPomu("sleepy","shutdown")}
 document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.page)go(e.target.dataset.page)})
 
 function addTask(titleOverride, projectOverride){
