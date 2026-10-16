@@ -143,6 +143,33 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 .category-row input{width:100%}.category-feedback{font-size:12px;color:var(--sage-ink);overflow-wrap:anywhere}.category-feedback:empty{display:none}.category-feedback.danger{color:var(--bad)}
 .category-confirm{background:#FFF9F3;border:1px solid #E9CFBA;padding:18px;border-radius:12px;margin-top:16px;overflow-wrap:anywhere}.category-confirm p{font-size:13px}.category-confirm select{width:100%;margin-bottom:15px}
 @media(max-width:380px){.category-row{gap:5px}.category-row button.ghost{padding:9px 8px;font-size:12px}}
+
+/* V1.4: finite, event-driven companion reactions; no floating overlays. */
+.pomu{display:flex;align-items:center;gap:12px;min-height:76px;margin:0 0 16px;pointer-events:none}
+.pomu img{width:64px;height:64px;object-fit:contain;flex:none}
+.pomu-speech{font-size:12px;color:var(--muted);max-width:190px;overflow-wrap:anywhere}
+.pomu-speech:empty{display:none}
+body[data-appearance="cozy"] .pomu-speech:not(:empty){background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px}
+body[data-appearance="cozy"] .pomu{min-height:92px}
+body[data-appearance="cozy"] .pomu img{width:84px;height:84px}
+body[data-appearance="professional"] .pomu-speech{display:none}
+.pomu[data-reaction] img{animation:pomu-nod 1.5s ease both}
+.pomu[data-reaction="entrance"] img{animation-name:pomu-entrance}
+.pomu[data-reaction="create"] img{animation-name:pomu-bounce}
+.pomu[data-reaction="celebrate"] img{animation-name:pomu-celebrate}
+body[data-appearance="cozy"] .pomu[data-reaction] img{animation-timing-function:ease-in-out}
+.timer-companion{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.timer-companion .pomu{margin:12px 0}
+.overlay-companion{margin:0;justify-content:center}
+.appearance-setting{margin-bottom:18px}
+.appearance-setting label{display:block;font-weight:600;margin-bottom:8px}
+@keyframes pomu-entrance{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes pomu-nod{0%,100%{transform:none}40%{transform:translateY(2px)}}
+@keyframes pomu-bounce{0%,45%,100%{transform:none}22%{transform:translateY(-4px)}}
+@keyframes pomu-celebrate{0%,70%,100%{transform:none}25%{transform:translateY(-4px) rotate(-3deg)}48%{transform:rotate(3deg)}}
+body[data-appearance="cozy"] .pomu[data-reaction="celebrate"] img{animation-name:pomu-cozy-celebrate}
+@keyframes pomu-cozy-celebrate{0%,75%,100%{transform:none}25%{transform:translateY(-7px) rotate(-5deg)}50%{transform:translateY(-2px) rotate(5deg)}}
+@media(prefers-reduced-motion:reduce){.pomu[data-reaction] img{animation:none !important}}
 </style>
 </head>
 <body>
@@ -162,6 +189,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
   <main class="main">
     <section id="today" class="section active">
       <div class="topbar"><div><div class="eyebrow">A fresh page, a little focus</div><h1>Today</h1><div class="sub" id="todayDate"></div></div><button class="primary" onclick="go('focus')">Start Focus</button></div>
+      <div class="pomu" data-pomu="today" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="72" height="72"><span class="pomu-speech"></span></div>
       <div class="grid daily-priorities">
         <div class="card now-card"><h3>Now</h3><div class="card-caption">Just one thing. You have room to focus.</div><div id="nowTask"></div></div>
         <div class="card next-card"><h3>Next</h3><div class="card-caption">A little queue. Up to three things for later.</div><div id="nextTasks"></div></div>
@@ -177,6 +205,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 
     <section id="tasks" class="section">
       <div class="topbar"><div><h1>Tasks</h1><div class="sub">Capture → clarify → execute. Do not keep tasks in your head.</div></div></div>
+      <div class="pomu" data-pomu="tasks" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="72" height="72"><span class="pomu-speech"></span></div>
       <div class="card">
         <div class="row task-create-row">
           <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
@@ -222,7 +251,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
             <button class="primary" onclick="launchImmersiveFocus()">Enter Focus</button>
           </div>
           <select id="focusSelect" aria-label="Focus task" style="width:100%;margin-top:14px" onchange="selectFocusTask(this.value)"></select>
-          <div class="timer" id="timer">25:00</div>
+          <div class="timer-companion"><div class="timer" id="timer">25:00</div><div class="pomu" data-pomu="focus" data-rest="focus"><img src="assets/pomu/pomu_focus.png" alt="Pomu, your focus companion" width="72" height="72"><span class="pomu-speech"></span></div></div>
           <div class="focus-task" id="focusTaskName">Choose a task</div>
           <div class="row" style="margin-top:12px">
             <button class="ghost" onclick="resetTimer(25)">25m</button>
@@ -262,7 +291,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
       <div class="topbar"><div><h1>Shutdown ritual</h1><div class="sub">Close loops so your brain does not keep working after work.</div></div></div>
       <div class="grid g2">
         <div class="card">
-          <h3>End-of-day review</h3>
+          <h3>End-of-day review</h3><div class="pomu" data-pomu="shutdown" data-rest="sleepy"><img src="assets/pomu/pomu_sleepy.png" alt="Pomu, your sleepy companion" width="72" height="72"><span class="pomu-speech"></span></div>
           <ul class="shutdown" id="shutdownChecklist"></ul>
           <button class="primary" onclick="generateShutdown()">Refresh summary</button>
         </div>
@@ -277,6 +306,10 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 
     <section id="settings" class="section">
       <div class="topbar"><div><h1>Data</h1><div class="sub">Local-first prototype. Your browser stores the data.</div></div></div>
+      <div class="card appearance-setting"><label for="pomuAppearance">Pomu appearance</label>
+      <select id="pomuAppearance" aria-describedby="appearanceHelp" onchange="setPomuAppearance(this.value)"><option value="professional">Professional</option><option value="cozy">Cozy</option></select>
+      <p class="small" id="appearanceHelp">Professional keeps Pomu small and quiet. Cozy adds gentle reactions and occasional encouragement.</p></div>
+
       <div class="card">
         <div class="row">
           <button class="primary" onclick="exportData()">Export JSON</button>
@@ -289,6 +322,46 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
   </main>
 </div>
 <script>
+
+/* Appearance is deliberately separate from kikiFocusOS and JSON backups. */
+const POMU_APPEARANCE_KEY="pomuAppearance";
+let pomuReactionTimer=null, pomuLastSpeech=0;
+function setPomuAppearance(mode,persist=true){
+  mode=mode==="cozy"?"cozy":"professional";
+  document.body.dataset.appearance=mode;
+  document.getElementById("pomuAppearance").value=mode;
+  if(persist){try{localStorage.setItem(POMU_APPEARANCE_KEY,mode)}catch{/* Still usable for this visit. */}}
+  if(mode==="professional")document.querySelectorAll(".pomu-speech").forEach(el=>el.textContent="");
+}
+function restPomu(){
+  document.querySelectorAll("[data-pomu]").forEach(el=>{
+    const state=el.dataset.rest;
+    el.querySelector("img").src=`assets/pomu/pomu_${state}.png`;
+    el.querySelector("img").alt=`Pomu, your ${state} companion`;
+    delete el.dataset.reaction;el.querySelector(".pomu-speech").textContent="";
+  });
+}
+function reactPomu(state,reaction,message=""){
+  clearTimeout(pomuReactionTimer);restPomu();
+  const speak=document.body.dataset.appearance==="cozy" && message && Date.now()-pomuLastSpeech>15000;
+  let spoken=false;
+  document.querySelectorAll("[data-pomu]").forEach(el=>{
+    if(!el.getClientRects().length)return;
+    const img=el.querySelector("img");img.src=`assets/pomu/pomu_${state}.png`;img.alt=`Pomu, your ${state} companion`;
+    void img.offsetWidth;el.dataset.reaction=reaction;
+    if(speak){el.querySelector(".pomu-speech").textContent=message;spoken=true}
+  });
+  if(spoken)pomuLastSpeech=Date.now();
+  pomuReactionTimer=setTimeout(restPomu,1600);
+}
+function initPomu(){
+  let mode="professional";try{mode=localStorage.getItem(POMU_APPEARANCE_KEY)}catch{}
+  setPomuAppearance(mode,false);
+  // Preload the supplied artwork so brief reactions do not wait for a download.
+  ["idle","happy","focus","sleepy"].forEach(state=>{const img=new Image();img.src=`assets/pomu/pomu_${state}.png`});
+  reactPomu("idle","entrance");
+}
+
 /* Categories retain task.project and the existing backup/storage format. */
 const DEFAULT_CATEGORIES = ["Lab Ops","Regulatory","Product","IT / Systems","Reporting","People","Personal"];
 function categoryKey(name){return name.trim().toLowerCase()}
@@ -407,16 +480,16 @@ normalizeCategories(db);
 let seconds=1500, timerHandle=null, activeTaskId=null;
 
 function save(){localStorage.setItem("kikiFocusOS",JSON.stringify(db));renderAll()}
-function go(page){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));document.getElementById(page).classList.add("active");document.querySelector(`#nav button[data-page="${page}"]`)?.classList.add("active");renderAll()}
+function go(page){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));document.getElementById(page).classList.add("active");document.querySelector(`#nav button[data-page="${page}"]`)?.classList.add("active");renderAll();clearTimeout(pomuReactionTimer);restPomu()}
 document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.page)go(e.target.dataset.page)})
 
 function addTask(titleOverride, projectOverride){
  const title=titleOverride||document.getElementById("taskTitle").value.trim(); if(!title)return;
  db.tasks.push({id:Date.now(),title,project:projectOverride??document.getElementById("taskProject").value,priority:+document.getElementById("taskPriority").value,estimate:+document.getElementById("taskEstimate").value,due:document.getElementById("taskDue").value,status:"todo",done:false});
- if(!titleOverride) document.getElementById("taskTitle").value=""; save();
+ if(!titleOverride) document.getElementById("taskTitle").value=""; save();reactPomu("happy","create","One step at a time.");
 }
-function setDone(id,v){let t=db.tasks.find(x=>x.id==id);if(t){t.done=v;t.status=v?"done":t.status==="done"?"todo":t.status;save()}}
-function setStatus(id,status){let t=db.tasks.find(x=>x.id==id);if(t){t.status=status;t.done=status==="done";save()}}
+function setDone(id,v){let t=db.tasks.find(x=>x.id==id);if(t){const completed=v&&!t.done;t.done=v;t.status=v?"done":t.status==="done"?"todo":t.status;save();if(completed)reactPomu("happy","celebrate","A little progress. Well done.")}}
+function setStatus(id,status){let t=db.tasks.find(x=>x.id==id);if(t){const completed=status==="done"&&!t.done;t.status=status;t.done=status==="done";save();if(completed)reactPomu("happy","celebrate","A little progress. Well done.")}}
 function delTask(id){db.tasks=db.tasks.filter(x=>x.id!=id);save()}
 function score(t){
  const today=new Date(); today.setHours(0,0,0,0); let s=(4-t.priority)*30;
@@ -535,6 +608,7 @@ function launchImmersiveFocus(){
   document.getElementById("prepMessage").textContent="Follow the balloon. You do not need to count.";
   startBreathing();
   syncOrbTimer();
+  restPomu();
 }
 function exitImmersiveFocus(){
   document.getElementById("focusOverlay").classList.remove("active");
@@ -573,12 +647,14 @@ function toggleImmersiveTimer(){
   if(timerHandle){
     clearInterval(timerHandle);timerHandle=null;immersiveRunning=false;
     btn.textContent="Resume";
+    reactPomu("idle","pause","Take a small breath.");
     return;
   }
   if(seconds<=0) seconds=focusLengthMin*60;
   immersiveRunning=true;
   focusStartedAtSeconds=seconds;
   btn.textContent="Pause";
+  reactPomu("focus","start","Just this one thing.");
   timerHandle=setInterval(()=>{
     seconds--;
     timerPaint();syncOrbTimer();
@@ -589,7 +665,7 @@ function toggleImmersiveTimer(){
       document.getElementById("breathePhase").textContent="COMPLETE";
       document.getElementById("prepMessage").textContent="Focus block complete.";
       document.getElementById("breatheCycle").textContent="take one slow breath";
-      if(navigator.vibrate) navigator.vibrate([120,80,120]);
+      reactPomu("happy","celebrate","Time for a little rest.");
     }
   },1000);
 }
@@ -612,12 +688,13 @@ function finishImmersiveTask(){
   exitImmersiveFocus();
   resetTimer(focusLengthMin);
   go("today");
+  reactPomu("happy","celebrate","A little progress. Well done.");
 }
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && document.getElementById("focusOverlay")?.classList.contains("active")) exitImmersiveFocus();
 });
 
-renderAll();
+document.addEventListener("DOMContentLoaded",()=>{renderAll();initPomu()});
 </script>
 
 <div id="focusOverlay" class="focus-overlay" aria-hidden="true">
@@ -627,6 +704,7 @@ renderAll();
       <button class="focus-close" onclick="exitImmersiveFocus()" title="Exit focus">×</button>
     </div>
 
+    <div class="pomu overlay-companion" data-pomu="overlay" data-rest="focus"><img src="assets/pomu/pomu_focus.png" alt="Pomu, your focused companion" width="72" height="72"><span class="pomu-speech"></span></div>
     <div class="breathe-wrap">
       <div id="breatheOrb" class="breathe-orb exhale">
         <div class="breathe-inner">
