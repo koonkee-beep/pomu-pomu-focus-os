@@ -1,4 +1,6 @@
-# System architecture and behavioural rules
+# POMU POMU Focus OS — system architecture and behavioural rules
+
+**POMU POMU · Do One Thing**
 
 ## Core principle
 

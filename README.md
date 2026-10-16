@@ -1,4 +1,6 @@
-# Kiki Focus OS — local prototype
+# POMU POMU Focus OS — local prototype
+
+**POMU POMU · Do One Thing**
 
 A single-user, local-first work management prototype derived from the workflow shown in the supplied video:
 
