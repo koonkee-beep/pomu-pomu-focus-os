@@ -20,24 +20,17 @@ These are image element widths; object-fit preserves the supplied proportions. T
 
 Temporary reactions reset after 1.3 seconds. Rerenders do not touch companion animation state; only actions trigger reactions. While the immersive overlay is open, only its companion reacts. Professional has smaller movement and no speech or extra glints. Reduced motion disables all companion animations and glints. No loops, sounds, notifications, frameworks, or runtime dependencies were added.
 
-## Unresolved release blocker: transparency
+## Transparent assets
 
-**Background removal is not complete.** All four original PNGs have dark backgrounds and no fully transparent pixels. An automated removal attempt returned a combined, upscaled image with visible edge artifacts and changed details; it was rejected rather than replacing Pomu with altered illustrations. None of that output is used in this branch.
+The prior dark-background release blocker is resolved using the user's white-background replacement artwork from main commit `9c50f36` (`docs/assets/pomu_*.png`). The four application assets now have genuine alpha transparency, preserved source proportions, intact light fur and character details, and refined anti-aliased edges.
 
-The original assets remain byte-for-byte intact in `assets/pomu/`, including faces, outlines, sparkles, laptop, sleeping symbols, soft shading, and proportions. Consequently dark rectangles remain visible on ivory and white. The clean transparent-edge/no-dark-box requirements cannot be marked passed. Approved transparent source exports or a carefully retouched cutout of the original artwork are still needed before release. CSS masking/blending is not used to conceal this issue.
+Background removal is restricted to the border-connected exterior and its narrow boundary band. No application HTML, CSS, JavaScript, event handlers, or settings were changed in this asset update. No dependencies were added.
 
-| Asset | Dimensions | Alpha range | Fully transparent pixels |
-| --- | --- | --- | --- |
-| pomu_idle.png | 155 × 133 | 128–255 | 0 |
-| pomu_happy.png | 145 × 154 | 170–255 | 0 |
-| pomu_focus.png | 159 × 112 | 170–255 | 0 |
-| pomu_sleepy.png | 137 × 133 | 128–255 | 0 |
-
-[Original asset inspection on ivory and white](screenshots/asset-inspection.png). This is evidence of the remaining blocker, not a successful transparency check.
+[Asset method, alpha measurements, and enlarged previews on ivory, white, and charcoal](ASSETS.md).
 
 ## Verification
 
-118 browser assertions passed in Chromium through Playwright against a local HTTP server. No JavaScript errors. These checks do not include a transparency pass.
+74 browser assertions passed again with the new transparent assets installed, in Chromium through Playwright against a local HTTP server. No JavaScript errors. Alpha-channel and enlarged visual checks are documented in the asset report. The earlier UI refinement passed 118 assertions before this asset-only update.
 
 - Desktop Professional/Cozy: measured 80/112px, compact welcome, no overlap with greeting or focus button.
 - Mobile Professional/Cozy: measured 64/88px at 390px, compact welcome, no overlap.
@@ -68,4 +61,4 @@ Session completion was exercised by setting in-memory seconds to 1 and waiting f
 
 ## Data and rollback
 
-The existing `kikiFocusOS` structure, `pomuAppearance` preference key, task/category code, JSON backup format, and timer accounting remain unchanged by this refinement. No migration is needed. Revert this refinement commit to restore the earlier placement and animation styling.
+The existing `kikiFocusOS` structure, `pomuAppearance` preference key, task/category code, JSON backup format, and timer accounting remain unchanged by this refinement. No migration is needed. Reverting only the asset update restores the older artwork without changing application behaviour.
