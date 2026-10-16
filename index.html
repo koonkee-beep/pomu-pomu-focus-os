@@ -130,6 +130,9 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
 @media(max-width:380px){.sidebar{padding:16px 12px 12px}.app > .main{padding:20px 12px 28px}.nav button{font-size:11px;gap:5px}.card{padding:15px}.topbar button.primary{padding:10px 12px}.kpi span{font-size:10px}.focus-launch{flex-wrap:wrap}.kanban{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;scroll-behavior:auto !important}.breathe-orb.inhale,.breathe-orb.exhale{transform:none}}
 .file-input{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Align primary controls independently of the secondary category action. */
+.task-create-row{align-items:flex-start}
+.task-create-row > input,.task-create-row > select,.task-create-row > button,.task-create-row .category-picker select{height:44px}
 /* V1.3 category management follows the existing card and form system. */
 .category-picker{display:flex;flex:1 1 190px;flex-direction:column;gap:6px;min-width:0}
 .category-picker select{width:100%}.category-manage{font-size:11px;align-self:flex-start}
@@ -175,7 +178,7 @@ textarea{width:100%;min-height:112px;resize:vertical;margin-bottom:12px}
     <section id="tasks" class="section">
       <div class="topbar"><div><h1>Tasks</h1><div class="sub">Capture → clarify → execute. Do not keep tasks in your head.</div></div></div>
       <div class="card">
-        <div class="row">
+        <div class="row task-create-row">
           <input id="taskTitle" aria-label="Task title" placeholder="Task title" style="flex:2;min-width:220px">
           <div class="category-picker">
             <select id="taskProject" aria-label="Task category"></select>
