@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Kiki Focus OS</title>
+<title>POMU POMU Focus OS</title>
 <style>
 :root{
   --bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--text:#f4f5f7;--muted:#9ca3af;
@@ -121,7 +121,7 @@ textarea{width:100%;min-height:90px;resize:vertical}
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand">Kiki <span>Focus OS</span></div>
+    <div class="brand">POMU POMU <span>Focus OS</span><div class="small">Do One Thing</div></div>
     <div class="nav" id="nav">
       <button class="active" data-page="today">Today</button>
       <button data-page="tasks">Tasks</button>
@@ -317,7 +317,7 @@ function generateShutdown(){
 }
 function saveAnchor(){db.anchor=document.getElementById("tomorrowAnchor").value.trim();save()}
 function renderAnchor(){document.getElementById("tomorrowAnchor").value=db.anchor||"";document.getElementById("savedAnchor").textContent=db.anchor?`Saved: ${db.anchor}`:""}
-function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="kiki-focus-os.json";a.click()}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pomu-pomu-focus-os.json";a.click()}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save()}catch{alert("Invalid JSON")}};r.readAsText(f)}
 function resetAll(){if(confirm("Reset all local prototype data?")){db=structuredClone(DEFAULT);save()}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -444,7 +444,7 @@ renderAll();
 <div id="focusOverlay" class="focus-overlay" aria-hidden="true">
   <div class="focus-shell">
     <div class="focus-top">
-      <div>KIKI FOCUS OS · DO ONE THING</div>
+      <div>POMU POMU Focus OS · Do One Thing</div>
       <button class="focus-close" onclick="exitImmersiveFocus()" title="Exit focus">×</button>
     </div>
 
