@@ -296,7 +296,14 @@ function renderFocus(){
 function selectFocusTask(v){activeTaskId=v||null;renderFocus()}
 function timerPaint(){let m=Math.floor(seconds/60),s=seconds%60;document.getElementById("timer").textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;if(typeof syncOrbTimer==="function")syncOrbTimer()}
 function toggleTimer(){if(timerHandle){clearInterval(timerHandle);timerHandle=null;document.getElementById("timerBtn").textContent="Start"}else{timerHandle=setInterval(()=>{seconds--;timerPaint();if(seconds<=0){clearInterval(timerHandle);timerHandle=null;logFocus(25);alert("Focus block complete.");resetTimer(25)}},1000);document.getElementById("timerBtn").textContent="Pause"}}
-function resetTimer(min){if(timerHandle){clearInterval(timerHandle);timerHandle=null}seconds=min*60;timerPaint();document.getElementById("timerBtn").textContent="Start"}
+function resetTimer(min){
+  if(timerHandle){clearInterval(timerHandle);timerHandle=null}
+  focusLengthMin=min;
+  immersiveRunning=false;
+  seconds=min*60;
+  timerPaint();
+  document.getElementById("overlayStartBtn").textContent="Start focus";
+}
 function logFocus(min){let k=new Date().toISOString().slice(0,10);db.focusMinutes[k]=(db.focusMinutes[k]||0)+min;save()}
 function finishFocus(){if(!activeTaskId)return;setDone(activeTaskId,true);activeTaskId=null;resetTimer(25);renderFocus()}
 function captureDistraction(){let el=document.getElementById("distraction"),txt=el.value.trim();if(!txt)return;db.parking.push({id:Date.now(),text:txt,ts:new Date().toISOString()});db.inbox.push({id:Date.now()+1,text:txt,type:"distraction",processed:false,ts:new Date().toISOString()});el.value="";save()}
