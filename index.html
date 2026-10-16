@@ -75,6 +75,7 @@ button.danger{color:var(--bad)}
 .task > button.ghost{width:30px;min-height:30px;padding:0;font-size:18px;background:transparent;border-color:transparent;color:#81756D}
 .task > button.ghost:hover{color:var(--bad);background:#FCF0EB}
 .badge{display:inline-block;border:1px solid #E5E0D7;background:#F7F5F0;color:#69635B;font-size:10px;line-height:1.6;padding:3px 7px;border-radius:6px;margin-right:4px}
+.task-due{display:inline-flex;align-items:center;gap:5px;max-width:100%;margin-right:5px}.task-due input{width:137px;max-width:100%;padding:2px 5px;font-size:11px;min-height:30px}
 .p1{color:#9B4436;background:#FAEEE8;border-color:#EED6CD}.p2{color:#806025;background:#F8F3E7;border-color:#EAE0C7}.p3{color:var(--sage-ink);background:#EEF3EB;border-color:#D7E1D2}
 .timer{font-size:60px;line-height:1.2;font-weight:500;letter-spacing:-.045em;margin:24px 0 12px;font-variant-numeric:tabular-nums}
 .focus-task{color:#825239;font-weight:600;min-height:22px;overflow-wrap:anywhere}
@@ -520,6 +521,7 @@ function addTask(titleOverride, projectOverride){
 }
 function setDone(id,v){let t=db.tasks.find(x=>x.id==id);if(t){const completed=v&&!t.done;t.done=v;t.status=v?"done":t.status==="done"?"todo":t.status;save();if(completed)reactPomu("happy","celebrate","A little progress. Well done.")}}
 function setStatus(id,status){let t=db.tasks.find(x=>x.id==id);if(t){const completed=status==="done"&&!t.done;t.status=status;t.done=status==="done";save();if(completed)reactPomu("happy","celebrate","A little progress. Well done.")}}
+function setDue(id,value){const task=db.tasks.find(t=>t.id==id);if(!task)return;task.due=value;save()}
 function delTask(id){db.tasks=db.tasks.filter(x=>x.id!=id);save()}
 function score(t){
  const today=new Date(); today.setHours(0,0,0,0); let s=(4-t.priority)*30;
@@ -529,7 +531,7 @@ function score(t){
 function openTasks(){return db.tasks.filter(t=>!t.done).sort((a,b)=>score(b)-score(a))}
 function taskHTML(t){
  return `<div class="task"><input type="checkbox" ${t.done?"checked":""} onchange="setDone(${t.id},this.checked)">
- <div><div class="task-title">${esc(t.title)}</div><div class="meta"><span class="badge">${esc(t.project||"Uncategorized")}</span><span class="badge p${t.priority}">P${t.priority}</span><span class="badge">${t.estimate}m</span>${t.due?`<span class="badge">Due ${t.due}</span>`:""} <select onchange="setStatus(${t.id},this.value)" style="padding:2px 5px;font-size:11px"><option ${t.status==="todo"?"selected":""} value="todo">To do</option><option ${t.status==="doing"?"selected":""} value="doing">Doing</option><option ${t.status==="waiting"?"selected":""} value="waiting">Waiting</option><option ${t.status==="done"?"selected":""} value="done">Done</option></select></div></div>
+ <div><div class="task-title">${esc(t.title)}</div><div class="meta"><span class="badge">${esc(t.project||"Uncategorized")}</span><span class="badge p${t.priority}">P${t.priority}</span><span class="badge">${t.estimate}m</span><label class="task-due">Due<input type="date" value="${esc(t.due||"")}" aria-label="Due date for ${esc(t.title)}" onchange="setDue(${t.id},this.value)"></label> <select onchange="setStatus(${t.id},this.value)" style="padding:2px 5px;font-size:11px"><option ${t.status==="todo"?"selected":""} value="todo">To do</option><option ${t.status==="doing"?"selected":""} value="doing">Doing</option><option ${t.status==="waiting"?"selected":""} value="waiting">Waiting</option><option ${t.status==="done"?"selected":""} value="done">Done</option></select></div></div>
  <button class="ghost danger" onclick="delTask(${t.id})">×</button></div>`;
 }
 function renderTasks(){document.getElementById("taskList").innerHTML=db.tasks.length?db.tasks.sort((a,b)=>a.done-b.done||score(b)-score(a)).map(taskHTML).join(""):"<div class='small'>No tasks yet.</div>"}
