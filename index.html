@@ -215,7 +215,7 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
       <div class="topbar">
         <div class="today-welcome">
           <div class="welcome-copy"><div class="eyebrow">A fresh page, a little focus</div><h1>Today</h1><div class="sub" id="todayDate"></div></div>
-          <div class="pomu" data-pomu="today" data-rest="idle"><img src="assets/pomu/pomu_idle.png" alt="Pomu, your idle companion" width="80" height="80"><span class="pomu-speech"></span></div>
+          <div class="pomu" data-pomu="today" data-rest="happy"><img src="assets/pomu/pomu_happy.png" alt="Pomu, your happy companion" width="80" height="80"><span class="pomu-speech"></span></div>
         </div>
         <button class="primary" onclick="go('focus')">Start Focus</button>
       </div>
@@ -389,7 +389,7 @@ function initPomu(){
   setPomuAppearance(mode,false);
   // Preload the supplied artwork so brief reactions do not wait for a download.
   ["idle","happy","focus","sleepy"].forEach(state=>{const img=new Image();img.src=`assets/pomu/pomu_${state}.png`});
-  reactPomu("idle","entrance");
+  reactPomu("happy","entrance");
 }
 
 /* Categories retain task.project and the existing backup/storage format. */
