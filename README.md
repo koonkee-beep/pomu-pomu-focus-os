@@ -14,7 +14,7 @@ A single-user, local-first work management prototype derived from the workflow s
 
 Open `index.html` in Chrome/Edge. No install is required.
 
-The app stores data in browser `localStorage`. Use **Data → Export JSON** for backups.
+The app stores local-only data in browser `localStorage`. Optional **Data → Your account & sync** adds private cross-device lists with Supabase. See [cloud setup](docs/cloud-sync/SETUP.md) before enabling it. Use **Data → Export JSON** for backups.
 
 ## Current modules
 
@@ -27,7 +27,7 @@ The app stores data in browser `localStorage`. Use **Data → Export JSON** for 
 
 ## Recommended production upgrade
 
-For a true multi-device real-time system:
+Optional future integrations (the current private sync does not require a frontend rewrite):
 
 - Frontend: Next.js / React
 - Database: Supabase Postgres
@@ -38,7 +38,7 @@ For a true multi-device real-time system:
 - Notification layer: email / Telegram / Slack / mobile push
 - Audit/export: immutable activity log + CSV/JSON export
 
-Do not put an API key directly in the browser. Route AI calls through a backend/edge function.
+Never put AI provider keys or Supabase secret/service-role keys in the browser. The Supabase publishable key is public; database access is enforced by authentication and row-level rules. Route any future AI calls through a backend/edge function.
 
 
 ## V1 focus experience
@@ -61,3 +61,10 @@ In **Tasks**, choose **Manage Categories** next to the category dropdown to add,
 Renaming updates every assigned task, including completed tasks. Deletion asks you to confirm and, when tasks use the category, lets you move them to another category or **Uncategorized**. It never deletes tasks. Uncategorized is always available, even if you remove every category. Inbox triage uses Personal when it exists and Uncategorized otherwise.
 
 Categories are included in the existing JSON export under `categories`, alongside the unchanged task `project` field. Older backups without category settings receive the defaults plus any custom project names already used by their tasks. Importing a backup replaces the current dataset as before. An explicitly empty category list stays empty unless imported tasks reference category names that need to be recovered.
+
+
+## Optional private cloud sync
+
+Email/password sign-in, per-account lists, local-data copying, offline pending edits, and explicit cross-device conflict resolution are implemented without an SDK or app dependencies. The public project settings are in `cloud-config.js`; the owner-only database schema is in `supabase/setup.sql`.
+
+[Set up the Supabase project](docs/cloud-sync/SETUP.md) · [Verification and limits](docs/cloud-sync/VERIFICATION.md). Your original local-only data and JSON backup format are retained.
