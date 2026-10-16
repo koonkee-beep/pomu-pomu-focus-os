@@ -195,7 +195,18 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
  #today .topbar{gap:7px 10px}
 }
 @media(prefers-reduced-motion:reduce){.pomu[data-reaction] img,.pomu[data-reaction]::before,.pomu[data-reaction]::after{animation:none !important}.pomu[data-reaction]::before,.pomu[data-reaction]::after{display:none}}
+/* Account controls follow the existing warm card/form system. */
+.sync-summary{margin-bottom:14px;font-size:12px}.sync-summary[hidden]{display:none}
+.cloud-card{margin-bottom:18px}.cloud-card [hidden]{display:none !important}
+.cloud-card h2{font-size:16px;margin:0 0 8px}.cloud-card p{overflow-wrap:anywhere}
+.cloud-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.cloud-fields label{display:flex;flex-direction:column;gap:5px;font-size:12px}.cloud-fields input{width:100%}
+.cloud-notice{border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0;background:var(--panel2)}
+#cloudPendingSelect{max-width:100%}
+@media(max-width:760px){.cloud-fields{grid-template-columns:minmax(0,1fr)}}
 </style>
+<script defer src="cloud-config.js"></script>
+<script defer src="cloud-sync.js"></script>
 </head>
 <body>
 <div class="app">
@@ -212,6 +223,7 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
     <div class="sidebar-note">A little space to do good work.<span>One thing at a time.</span></div>
   </aside>
   <main class="main">
+    <button id="cloudSummary" class="ghost sync-summary" type="button" hidden aria-label="Open account and sync settings"></button>
     <section id="today" class="section active">
       <div class="topbar">
         <div class="today-welcome">
@@ -336,7 +348,52 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
     </section>
 
     <section id="settings" class="section">
-      <div class="topbar"><div><h1>Data</h1><div class="sub">Local-first prototype. Your browser stores the data.</div></div></div>
+      <div class="topbar"><div><h1>Data</h1><div class="sub">Use a local-only list or sign in to sync privately across devices.</div></div></div>
+      <section class="card cloud-card" aria-labelledby="cloudHeading">
+        <h2 id="cloudHeading">Your account &amp; sync</h2>
+        <p class="small" id="cloudAccount">Use the same account on your laptop and phone.</p>
+        <p class="small" id="cloudStatus" role="status" aria-live="polite">Local only — saved in this browser.</p>
+        <form id="cloudAuthForm">
+          <div class="cloud-fields">
+            <label>Email<input id="cloudEmail" type="email" autocomplete="email" required></label>
+            <label>Password<input id="cloudPassword" type="password" autocomplete="current-password" required></label>
+          </div>
+          <div class="row">
+            <button class="primary" type="submit">Sign in</button>
+            <button class="ghost" id="cloudSignUp" type="button">Create account</button>
+            <button class="ghost" id="cloudRecover" type="button">Forgot password?</button>
+          </div>
+          <p class="small">Your account list is private. Signing in won’t automatically upload this browser’s local-only list.</p>
+        </form>
+        <div id="cloudSignedIn" hidden>
+          <div class="row">
+            <button class="primary" id="cloudSyncNow" type="button">Sync now</button>
+            <button class="ghost" id="cloudSignOut" type="button">Sign out</button>
+            <button class="ghost" id="cloudLocalCopy" type="button">Copy local-only list to account</button>
+            <button class="ghost" id="cloudBackupDownload" type="button">Download previous account copy</button>
+          </div>
+          <p class="small">Changes save here first and sync when online. Other devices check for updates about every 10 seconds. Sign out to return to your local-only list.</p>
+        </div>
+        <div class="cloud-notice" id="cloudConflict" hidden>
+          <p>Both devices changed the list. Export your device’s copy if you want to compare before choosing. The replaced copy is downloaded as a backup.</p>
+          <div class="row">
+            <button class="ghost" id="cloudExportPending" type="button">Export this device’s copy</button>
+            <button class="ghost" id="cloudUseRemote" type="button">Use cloud copy</button>
+            <button class="ghost" id="cloudUseLocal" type="button">Keep this device’s copy</button>
+          </div>
+        </div>
+        <div class="cloud-notice" id="cloudPending" hidden>
+          <p>Pending edits were found in another tab or a previously closed tab on this device.</p>
+          <label for="cloudPendingSelect">Pending copy</label>
+          <select id="cloudPendingSelect"></select>
+          <button class="ghost" id="cloudPendingRestore" type="button">Load pending copy</button>
+        </div>
+        <form id="cloudRecovery" class="cloud-notice" hidden>
+          <label for="cloudNewPassword">New password (at least 8 characters)</label>
+          <input id="cloudNewPassword" type="password" autocomplete="new-password" minlength="8" required>
+          <button class="primary" type="submit">Update password</button>
+        </form>
+      </section>
       <div class="card appearance-setting"><label for="pomuAppearance">Pomu appearance</label>
       <select id="pomuAppearance" aria-describedby="appearanceHelp" onchange="setPomuAppearance(this.value)"><option value="professional">Professional</option><option value="cozy">Cozy</option></select>
       <p class="small" id="appearanceHelp">Professional keeps Pomu small and quiet. Cozy adds gentle reactions and occasional encouragement.</p></div>
@@ -347,7 +404,7 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
           <label class="ghost" style="cursor:pointer">Import JSON<input type="file" id="importFile" accept=".json" class="file-input" onchange="importData(event)"></label>
           <button class="ghost danger" onclick="resetAll()">Reset prototype</button>
         </div>
-        <p class="small">No server, no login, no external analytics. For production, connect this UI to Supabase/Postgres and an AI classification endpoint.</p>
+        <p class="small">Export JSON for a backup. Import replaces the current list; while signed in, that replacement also syncs to your account.</p>
       </div>
     </section>
   </main>
@@ -510,7 +567,7 @@ let db = JSON.parse(localStorage.getItem("kikiFocusOS")||"null") || structuredCl
 normalizeCategories(db);
 let seconds=1500, timerHandle=null, activeTaskId=null;
 
-function save(){localStorage.setItem("kikiFocusOS",JSON.stringify(db));renderAll()}
+function save(){if(!window.PomuSync?.persist())localStorage.setItem("kikiFocusOS",JSON.stringify(db));renderAll()}
 function go(page){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));document.getElementById(page).classList.add("active");document.querySelector(`#nav button[data-page="${page}"]`)?.classList.add("active");renderAll();clearTimeout(pomuReactionTimer);restPomu();if(page==="shutdown")reactPomu("sleepy","shutdown")}
 document.getElementById("nav").addEventListener("click",e=>{if(e.target.dataset.page)go(e.target.dataset.page)})
 
@@ -570,7 +627,7 @@ function captureInbox(){let el=document.getElementById("inboxText"),txt=el.value
 function classify(text){let s=text.toLowerCase();if(/follow|send|email|check|review|prepare|draft|call|meeting|submit|update/.test(s))return "task";if(/idea|maybe|could|what if|consider/.test(s))return "idea";if(/wait|pending|await|reply/.test(s))return "waiting";return "note"}
 function triageOne(id){let x=db.inbox.find(i=>i.id==id);if(!x)return;x.type=classify(x.text);if(x.type==="task"){x.processed=true;addTask(x.text,inboxCategory())}else{x.processed=true;save()}}
 function triageInbox(){db.inbox.filter(x=>!x.processed).forEach(x=>{x.type=classify(x.text); if(x.type==="task"){db.tasks.push({id:Date.now()+Math.random(),title:x.text,project:inboxCategory(),priority:2,estimate:30,due:"",status:"todo",done:false})} x.processed=true});save()}
-function renderInbox(){document.getElementById("inboxList").innerHTML=db.inbox.length?db.inbox.slice().reverse().map(x=>`<div class="note"><div>${esc(x.text)}</div><div class="meta"><span class="badge">${x.type}</span>${x.processed?"processed":`<button class="ghost" onclick="triageOne(${x.id})">Triage</button>`}</div></div>`).join(""):"<div class='small'>Inbox empty.</div>"}
+function renderInbox(){document.getElementById("inboxList").innerHTML=db.inbox.length?db.inbox.slice().reverse().map(x=>`<div class="note"><div>${esc(x.text)}</div><div class="meta"><span class="badge">${esc(x.type)}</span>${x.processed?"processed":`<button class="ghost" onclick="triageOne(${x.id})">Triage</button>`}</div></div>`).join(""):"<div class='small'>Inbox empty.</div>"}
 function generateShutdown(){
  const open=openTasks(), doing=open.filter(t=>t.status==="doing"), waiting=open.filter(t=>t.status==="waiting"), inbox=db.inbox.filter(x=>!x.processed);
  document.getElementById("shutdownChecklist").innerHTML=[
@@ -597,13 +654,14 @@ function importData(e){
         throw new Error("Invalid backup");
       }
       normalizeCategories(data);
+      if(window.PomuSync?.isSignedIn()){if(!PomuSync.validList(data))throw new Error("Invalid account list");PomuSync.backupCurrent()}
       cancelCategoryDelete(false);db=data;save();categoryFeedback("");
     }catch{alert("Invalid JSON backup. Your existing data has not been replaced.")}
     e.target.value="";
   };
   reader.readAsText(file);
 }
-function resetAll(){if(confirm("Reset all local prototype data?")){db=structuredClone(DEFAULT);cancelCategoryDelete(false);save();categoryFeedback("")}}
+function resetAll(){if(confirm(window.PomuSync?.isSignedIn()?"Reset your account list on all devices? Export JSON first to keep a copy.":"Reset all local prototype data?")){window.PomuSync?.backupCurrent();db=structuredClone(DEFAULT);cancelCategoryDelete(false);save();categoryFeedback("")}}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderAll(){document.getElementById("todayDate").textContent=new Date().toLocaleString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});renderCategories();renderTasks();renderToday();renderFocus();renderInbox();generateShutdown();renderAnchor();timerPaint()}
 
@@ -726,7 +784,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape" && document.getElementById("focusOverlay")?.classList.contains("active")) exitImmersiveFocus();
 });
 
-document.addEventListener("DOMContentLoaded",()=>{renderAll();initPomu()});
+document.addEventListener("DOMContentLoaded",()=>{renderAll();initPomu();window.PomuSync?.init()});
 </script>
 
 <div id="focusOverlay" class="focus-overlay" aria-hidden="true">
