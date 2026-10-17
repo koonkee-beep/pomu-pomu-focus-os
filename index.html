@@ -207,6 +207,8 @@ body[data-appearance="cozy"] .pomu[data-reaction="celebrate"]::after{left:calc(v
 .cloud-notice{border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0;background:var(--panel2)}
 #cloudPendingSelect{max-width:100%}
 @media(max-width:760px){.cloud-fields{grid-template-columns:minmax(0,1fr)}}
+#focusWakeRetry[hidden]{display:none}
+#focusWakeRetry{margin-top:8px}
 </style>
 <script defer src="cloud-config.js"></script>
 <script defer src="cloud-sync.js"></script>
@@ -622,6 +624,7 @@ function resetTimer(min){
   seconds=min*60;
   timerPaint();
   document.getElementById("overlayStartBtn").textContent="Start focus";
+  updateFocusScreenAwake();
 }
 function logFocus(min){let k=new Date().toISOString().slice(0,10);db.focusMinutes[k]=(db.focusMinutes[k]||0)+min;save()}
 function finishFocus(){if(!activeTaskId)return;setDone(activeTaskId,true);activeTaskId=null;resetTimer(25);renderFocus()}
@@ -676,6 +679,57 @@ let breatheHandle = null;
 let prepBreathsRemaining = 3;
 let focusStartedAtSeconds = null;
 
+/* Keep-awake is limited to a running, visible focus screen. */
+let focusScreenLock=null, focusScreenRequest=null, focusPageHidden=false;
+function wantsFocusScreenAwake(){
+  return immersiveRunning && !!timerHandle && !focusPageHidden
+    && document.visibilityState==="visible"
+    && document.getElementById("focusOverlay")?.classList.contains("active");
+}
+function focusScreenStatus(message,retry=false){
+  const status=document.getElementById("focusWakeStatus"), button=document.getElementById("focusWakeRetry");
+  if(status)status.textContent=message;
+  if(button)button.hidden=!retry;
+}
+function releaseFocusScreen(){
+  const lock=focusScreenLock;focusScreenLock=null;
+  if(lock)lock.release().catch(()=>{});
+}
+async function updateFocusScreenAwake(){
+  if(!wantsFocusScreenAwake()){
+    releaseFocusScreen();
+    focusScreenStatus(immersiveRunning?"Screen can sleep while focus is in the background.":"Start or resume focus to keep the screen awake.");
+    return;
+  }
+  if(!navigator.wakeLock?.request){
+    focusScreenStatus("Automatic screen wake is unavailable here. Check your device’s Auto-Lock setting.");return;
+  }
+  if(focusScreenLock && !focusScreenLock.released)return;
+  if(focusScreenRequest)return;
+  focusScreenStatus("Requesting screen stay-awake…");
+  let abandoned=false;
+  focusScreenRequest=(async()=>{
+    try{
+      const lock=await navigator.wakeLock.request("screen");
+      if(!wantsFocusScreenAwake()){abandoned=true;await lock.release();return;}
+      if(lock.released){focusScreenStatus("Keep-awake was released by your device.",true);return;}
+      focusScreenLock=lock;
+      lock.addEventListener("release",()=>{
+        if(focusScreenLock!==lock)return;
+        focusScreenLock=null;
+        if(wantsFocusScreenAwake())focusScreenStatus("Keep-awake was released by your device.",true);
+      });
+      focusScreenStatus("Screen stays awake while you focus. Keep this tab open.");
+    }catch{
+      if(wantsFocusScreenAwake())focusScreenStatus("Screen may sleep: your device did not allow keep-awake. Check Auto-Lock settings.",true);
+    }finally{focusScreenRequest=null;if(abandoned&&wantsFocusScreenAwake())setTimeout(updateFocusScreenAwake,0);}
+  })();
+  await focusScreenRequest;
+}
+document.addEventListener("visibilitychange",updateFocusScreenAwake);
+window.addEventListener("pagehide",()=>{focusPageHidden=true;updateFocusScreenAwake()});
+window.addEventListener("pageshow",()=>{focusPageHidden=false;updateFocusScreenAwake()});
+
 function syncOrbTimer(){
   const m=Math.floor(seconds/60), s=seconds%60;
   const v=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
@@ -702,10 +756,12 @@ function launchImmersiveFocus(){
   startBreathing();
   syncOrbTimer();
   restPomu();
+  updateFocusScreenAwake();
 }
 function exitImmersiveFocus(){
   document.getElementById("focusOverlay").classList.remove("active");
   document.getElementById("focusOverlay").setAttribute("aria-hidden","true");
+  updateFocusScreenAwake();
 }
 function startBreathing(){
   clearInterval(breatheHandle);
@@ -740,6 +796,7 @@ function toggleImmersiveTimer(){
   if(timerHandle){
     clearInterval(timerHandle);timerHandle=null;immersiveRunning=false;
     btn.textContent="Resume";
+    updateFocusScreenAwake();
     reactPomu("idle","pause","Take a small breath.");
     return;
   }
@@ -754,6 +811,7 @@ function toggleImmersiveTimer(){
     if(seconds<=0){
       clearInterval(timerHandle);timerHandle=null;immersiveRunning=false;
       btn.textContent="Start again";
+      updateFocusScreenAwake();
       logFocus(focusLengthMin);
       document.getElementById("breathePhase").textContent="COMPLETE";
       document.getElementById("prepMessage").textContent="Focus block complete.";
@@ -761,6 +819,7 @@ function toggleImmersiveTimer(){
       reactPomu("happy","celebrate","Time for a little rest.");
     }
   },1000);
+  updateFocusScreenAwake();
 }
 function parkOverlayThought(){
   const el=document.getElementById("overlayDistraction"), txt=el.value.trim();
@@ -821,6 +880,9 @@ document.addEventListener("DOMContentLoaded",()=>{renderAll();initPomu();window.
       <button onclick="setFocusLength(90)">90m</button>
       <button onclick="finishImmersiveTask()">Complete</button>
     </div>
+
+    <div class="focus-hint" id="focusWakeStatus" role="status">Start focus to keep the screen awake.</div>
+    <button class="ghost" id="focusWakeRetry" type="button" hidden onclick="updateFocusScreenAwake()">Try keep-awake again</button>
 
     <div class="focus-park">
       <input id="overlayDistraction" aria-label="Thought to park" placeholder="+ Park a thought without leaving focus" onkeydown="if(event.key==='Enter')parkOverlayThought()">
