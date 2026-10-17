@@ -68,3 +68,10 @@ Categories are included in the existing JSON export under `categories`, alongsid
 Email/password sign-in, per-account lists, local-data copying, offline pending edits, and explicit cross-device conflict resolution are implemented without an SDK or app dependencies. The public project settings are in `cloud-config.js`; the owner-only database schema is in `supabase/setup.sql`.
 
 [Set up the Supabase project](docs/cloud-sync/SETUP.md) · [Verification and limits](docs/cloud-sync/VERIFICATION.md). Your original local-only data and JSON backup format are retained.
+
+
+## Keep the focus screen awake
+
+While the immersive focus timer is running and its tab is visible, the app requests a screen wake lock on supported HTTPS browsers. Pausing, completing, resetting, leaving the focus screen, or hiding the page releases the lock. Returning to a running focus screen requests it again. The timer remains usable when wake lock is unsupported or refused; the focus screen shows a short status and, when appropriate, a retry button.
+
+The browser/device can release or refuse keep-awake (for example, power-saving restrictions). It cannot override manually locking the device or keep the screen awake in another app. Physical iPad Safari verification is still needed. No timer accounting, task storage, or cloud sync changes are introduced.
